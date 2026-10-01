@@ -224,6 +224,23 @@ export default function LabElasticidades({ abrirDesafio = 0 }) {
           inelástica acontece o contrário. É por isso que a mesma promoção funciona num produto e
           quebra outro.
         </p>
+        <p>
+          Há dois <b>casos extremos</b>. Na demanda <b>perfeitamente inelástica</b> (E = 0), a
+          quantidade não muda com o preço: a curva é vertical. Na <b>perfeitamente elástica</b>
+          (E = ∞), a curva é horizontal num preço P1 — acima dele a quantidade demandada é zero,
+          nele assume qualquer valor, abaixo dele seria infinita.
+        </p>
+        <p>
+          O que torna a demanda mais ou menos elástica: a <b>disponibilidade de substitutos</b>, a
+          <b> essencialidade</b> do bem, o seu <b>peso no orçamento</b> e o <b>horizonte de
+          tempo</b> — com mais prazo, o consumidor encontra alternativas.
+        </p>
+        <p>
+          A mesma medida vale para a <b>oferta</b>: variação percentual da quantidade ofertada
+          sobre a do preço. Acima de 1 é elástica, igual a 1 unitária, abaixo de 1 inelástica. E a
+          <b> elasticidade-renda</b> troca o preço pela renda: aqui o sinal importa, e negativo
+          indica bem inferior.
+        </p>
         <button className="button primary" onClick={() => { setConceitoLido(true); irPara('laboratorio') }}>
           {conceitoLido ? 'Reler e ir ao laboratório' : 'Entendi, ir ao laboratório'} <span>→</span>
         </button>
