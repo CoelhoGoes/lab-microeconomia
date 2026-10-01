@@ -154,7 +154,8 @@ inferior de bem normal.
   para mudar de comportamento.
 - **Acima** dele, sobra produto — excesso de oferta — e a pressão é de baixa. **Abaixo**, falta
   produto — escassez — e a pressão é de alta. O tamanho da folga mede a força da pressão.
-- Um choque desloca uma curva e move o equilíbrio. Os quatro casos da aula estão no laboratório:
+- Um choque desloca uma curva e move o equilíbrio. Os quatro casos da aula — supersafra de
+  soja, estiagem no café, pato no Círio, ovos depois da Páscoa — são botões no laboratório:
   oferta ou demanda, aumentando ou diminuindo.
 
 #### Na tela
