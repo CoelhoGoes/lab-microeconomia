@@ -1737,7 +1737,8 @@ footer b {
   gap: 6px;
 }
 
-/* Quatro opções em 2 × 2: no flex, a quarta cairia sozinha na segunda linha. */
+/* Quatro opções em 2 × 2: no flex, a quarta cairia sozinha na segunda linha.
+   Usado nos casos da aula (tema 4) e nas contagens de agentes (tema 6). */
 .escolha-botoes.em-grade {
   display: grid;
   grid-template-columns: 1fr 1fr;

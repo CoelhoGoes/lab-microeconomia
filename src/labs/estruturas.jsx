@@ -12,7 +12,7 @@ const SECOES = [
   { id: 'desafio', numero: '6.2', titulo: 'Desafio' },
 ]
 
-const ROTULO = { um: 'Um', poucos: 'Poucos', muitos: 'Muitos' }
+const ROTULO = { um: 'Um', dois: 'Dois', poucos: 'Poucos', muitos: 'Muitos' }
 const OPCOES = Object.keys(ESTRUTURAS)
 
 export default function LabEstruturas({ abrirDesafio = 0 }) {
@@ -103,7 +103,7 @@ export default function LabEstruturas({ abrirDesafio = 0 }) {
 
           <div className="escolha-grupo">
             <span className="escolha-rotulo">Quantos vendem</span>
-            <div className="escolha-botoes">
+            <div className="escolha-botoes em-grade">
               {QUANTIDADES.map(q => (
                 <button key={q} className={vendedores === q ? 'escolha ativa' : 'escolha'}
                         onClick={() => setVendedores(q)} aria-pressed={vendedores === q}>
@@ -115,7 +115,7 @@ export default function LabEstruturas({ abrirDesafio = 0 }) {
 
           <div className="escolha-grupo">
             <span className="escolha-rotulo">Quantos compram</span>
-            <div className="escolha-botoes">
+            <div className="escolha-botoes em-grade">
               {QUANTIDADES.map(q => (
                 <button key={q} className={compradores === q ? 'escolha ativa' : 'escolha'}
                         onClick={() => setCompradores(q)} aria-pressed={compradores === q}>
