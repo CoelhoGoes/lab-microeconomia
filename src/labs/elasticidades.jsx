@@ -197,18 +197,18 @@ export default function LabElasticidades({ abrirDesafio = 0 }) {
                 onChange={setVariacaoRenda} hint={`De ${num(eRenda.qDe)} para ${num(eRenda.qPara)} mil un.`}
               />
               <Slider
-                label="Preço praticado" value={precoDe} min={PRECO_MIN} max={PRECO_MAX_LAB} step={0.5}
+                label="Preço praticado" value={precoDe} exibicao={num(precoDe, 1)} min={PRECO_MIN} max={PRECO_MAX_LAB} step={0.5}
                 suffix=" R$" onChange={setPrecoDe} hint="Muda a base de quantidade, e com ela a elasticidade"
               />
             </>
           ) : (
             <>
               <Slider
-                label="Preço antes" value={precoDe} min={PRECO_MIN} max={PRECO_MAX_LAB} step={0.5}
+                label="Preço antes" value={precoDe} exibicao={num(precoDe, 1)} min={PRECO_MIN} max={PRECO_MAX_LAB} step={0.5}
                 suffix=" R$" onChange={setPrecoDe} hint={`Vendia ${num(e.qDe)} mil un.`}
               />
               <Slider
-                label="Preço depois" value={precoPara} min={PRECO_MIN} max={PRECO_MAX_LAB} step={0.5}
+                label="Preço depois" value={precoPara} exibicao={num(precoPara, 1)} min={PRECO_MIN} max={PRECO_MAX_LAB} step={0.5}
                 suffix=" R$" onChange={setPrecoPara} hint={`Passou a vender ${num(e.qPara)} mil un.`}
               />
             </>
