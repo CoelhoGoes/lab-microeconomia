@@ -1682,10 +1682,8 @@ footer b {
   transition: width .18s;
 }
 
+/* Na mesma linha, antes do valor: posicionada por cima, cobria o número. */
 .alt-tag {
-  position: absolute;
-  right: 0;
-  top: 2px;
   font: 9px 'DM Mono', monospace;
   letter-spacing: .06em;
   color: var(--teal);
