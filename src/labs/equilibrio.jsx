@@ -319,6 +319,13 @@ function Conceito({ lido, onLido }) {
         equilíbrio de lugar — diferente de mudar o preço praticado, que apenas desliza o ponto
         ao longo da curva.
       </p>
+      <p>
+        São quatro casos. Numa <b>supersafra de soja</b>, a oferta aumenta: o preço cai e a
+        quantidade sobe. Numa <b>estiagem</b> que derruba a produção de café, a oferta diminui: o
+        preço sobe e a quantidade cai. Às vésperas do <b>Círio</b>, em Belém, a demanda por pato
+        aumenta: preço e quantidade sobem. Passada a <b>Páscoa</b>, a demanda por ovos de chocolate
+        diminui: preço e quantidade caem. No laboratório, cada caso é um botão.
+      </p>
       <button className="button primary" onClick={onLido}>
         {lido ? 'Reler e ir ao laboratório' : 'Entendi, ir ao laboratório'} <span>→</span>
       </button>
