@@ -1737,6 +1737,12 @@ footer b {
   gap: 6px;
 }
 
+/* Quatro opções em 2 × 2: no flex, a quarta cairia sozinha na segunda linha. */
+.escolha-botoes.em-grade {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
 .escolha {
   flex: 1;
   min-width: 78px;
