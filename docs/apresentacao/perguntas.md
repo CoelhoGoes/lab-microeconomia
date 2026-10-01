@@ -58,8 +58,9 @@ aquele cuja demanda cai quando a **renda** sobe, e é isso que o laboratório mo
 aparece: no modelo, a demanda sempre desce com o preço.
 
 ### "O laboratório separa efeito renda e efeito substituição?"
-**Pessoa 3.** Não. Mostra o efeito **total** de cada choque sobre a demanda. A decomposição fica
-para a aula.
+**Pessoa 3.** Não decompõe. O conceito nomeia os dois, como a aula: são as razões para a
+quantidade demandada responder ao preço. No laboratório eles agem juntos quando o preço do
+produto muda, e o que aparece é o efeito **total**.
 
 ### "E se oferta e demanda se deslocarem ao mesmo tempo?"
 **Pessoa 3.** O tema 4 permite os dois choques juntos. Com as duas curvas indo para a direita, a
