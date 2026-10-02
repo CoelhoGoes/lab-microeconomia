@@ -93,7 +93,8 @@ const TEMAS = [
 const PRECO_BASE = equilibrio().preco
 
 function App() {
-  const [aba, setAba] = useState('demanda-oferta')
+  // Abre no primeiro tema da ementa: é por onde o curso começa.
+  const [aba, setAba] = useState(TEMAS[0].id)
   const [briefDone, setBriefDone] = useState(false)
   // A faixa de desafio age sobre o tema ABERTO, não sobre um tema fixo. Guardar
   // qual tema pediu impede o sinal de vazar para os outros labs e marcá-los como
