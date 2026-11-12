@@ -4,14 +4,13 @@ Laboratório interativo de **microeconomia**. Cada conceito vira um experimento 
 o aluno move controles, vê as curvas e as métricas responderem na hora, e lê uma
 interpretação em texto do cenário que acabou de criar.
 
-Acompanha a ementa de Microeconomia até **Estruturas de Mercado**. Hoje há laboratório para:
+Acompanha dez temas, de custo de oportunidade à teoria da firma. O mapa inicial mostra o progresso de cada experiência.
 
-- **Demanda e oferta** — como renda e o preço de bens relacionados deslocam a curva
-- **Equilíbrio de mercado** — onde oferta e demanda se encontram, o que acontece fora desse
-  ponto, e como o preço caminha de volta
+Cada tema segue **Prever → Experimentar → Entender → Aplicar**, com opção de exploração livre. Os seis laboratórios anteriores foram preservados e adaptados ao novo percurso.
 
-Os demais temas — custo de oportunidade, teoria do consumidor, elasticidades e estruturas de
-mercado — estão mapeados em [docs/](docs/README.md), com o que falta em cada um.
+Novos temas: bens públicos e riscos, tributação, produção e rendimentos, custos/receitas e resultado. A planilha da aula 12 complementa apenas o último tema.
+
+O progresso fica no navegador (localStorage), sem conta ou servidor de dados. Uma interação real é necessária para registrar a etapa de experimentação; as aplicações exigem resolver os casos.
 
 ---
 
@@ -44,6 +43,7 @@ estado dos sliders é preservado em vez de a página recarregar inteira.
 | Comando | O que faz |
 |---|---|
 | `npm run dev` | Servidor de desenvolvimento |
+| `npm test` | Testes dos modelos e avaliadores com o runner nativo do Node |
 | `npm run build` | Build de produção em `dist/` |
 | `npm run preview` | Serve o build gerado |
 

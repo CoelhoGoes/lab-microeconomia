@@ -3,6 +3,8 @@ import Slider from '../shared/Slider.jsx'
 import { num } from '../shared/formato.js'
 import { usePersistido } from '../shared/persistencia.js'
 import SecoesDoModulo from '../shared/SecoesDoModulo.jsx'
+import Previsao, { Reflexao } from '../shared/Previsao.jsx'
+import { criarSecoes, PassoEntender } from '../shared/Jornada.jsx'
 import {
   equilibrioConsumidor, respeitaDecrescente, gerarRodada,
 } from './utilidade.js'
@@ -11,11 +13,7 @@ const UTILIDADES_PADRAO = [18, 15, 12, 9, 6, 3]
 const PRECO_INICIAL = 9
 const PRECO_MAX = 24
 
-const SECOES = [
-  { id: 'conceito', numero: '2.0', titulo: 'Conceito' },
-  { id: 'laboratorio', numero: '2.1', titulo: 'Laboratório' },
-  { id: 'desafio', numero: '2.2', titulo: 'Desafio' },
-]
+const SECOES = criarSecoes(2)
 
 // Altura máxima de um degrau, em pixels. Escala fixa pelo mesmo motivo dos
 // outros temas: com escala automática, tabelas diferentes desenhariam o mesmo.
@@ -25,9 +23,10 @@ const UTILIDADE_MAX = 24
 export default function LabConsumidor({ abrirDesafio = 0 }) {
   const [utilidades, setUtilidades] = useState(UTILIDADES_PADRAO)
   const [precoMercado, setPrecoMercado] = useState(PRECO_INICIAL)
-  const [secao, setSecao] = useState('conceito')
+  const [secao, setSecao] = useState('previsao')
+  const [previsao, setPrevisao] = usePersistido('microlab:consumidor:previsao', null)
   const [conceitoLido, setConceitoLido] = usePersistido('microlab:consumidor:conceito', false)
-  const [labVisitado, setLabVisitado] = usePersistido('microlab:consumidor:lab', false)
+  const [labVisitado, setLabVisitado] = usePersistido('microlab:consumidor:experimento-v2', false)
   const [rodadas, setRodadas] = usePersistido('microlab:consumidor:rodadas', 0)
   const [rodada, setRodada] = useState(() => gerarRodada())
   const [respostas, setRespostas] = useState({})
@@ -55,11 +54,10 @@ export default function LabConsumidor({ abrirDesafio = 0 }) {
     setUtilidades(atuais => atuais.map((u, j) => (j === i ? limpo : u)))
   }
 
-  const secaoOk = { conceito: conceitoLido, laboratorio: labVisitado, desafio: rodadas > 0 }
+  const secaoOk = { previsao: previsao !== null, conceito: conceitoLido, laboratorio: labVisitado, desafio: rodadas > 0 }
 
   const irPara = id => {
     setSecao(id)
-    if (id !== 'conceito') setLabVisitado(true)
   }
 
   // A faixa "Desafio rápido" da página pede a abertura desta seção. Vem como
@@ -81,9 +79,12 @@ export default function LabConsumidor({ abrirDesafio = 0 }) {
       onIr={irPara}
     />
 
+    {secao === 'previsao' && <Previsao tema="consumidor" resposta={previsao} onResponder={setPrevisao} onContinuar={() => irPara('laboratorio')} />}
+    {secao === 'conceito' && <Reflexao tema="consumidor" resposta={previsao} />}
+
     {secao === 'conceito' && (
       <div className="conceito">
-        <p className="eyebrow">2.0 · CONCEITO</p>
+        <p className="eyebrow">2.3 · ENTENDER</p>
         <h3>De onde vem a curva de demanda</h3>
         <p>
           A <b>utilidade marginal</b> é a satisfação que cada unidade adicional acrescenta. Ela
@@ -100,14 +101,14 @@ export default function LabConsumidor({ abrirDesafio = 0 }) {
           entre o que aceitaria pagar e o que de fato paga é o <b>excedente do consumidor</b>: o
           ganho dele na troca.
         </p>
-        <button className="button primary" onClick={() => { setConceitoLido(true); irPara('laboratorio') }}>
-          {conceitoLido ? 'Reler e ir ao laboratório' : 'Entendi, ir ao laboratório'} <span>→</span>
+        <button className="button primary" onClick={() => { setConceitoLido(true); irPara('desafio') }}>
+          {conceitoLido ? 'Ir para a aplicação' : 'Entendi, aplicar em outro caso'} <span>→</span>
         </button>
       </div>
     )}
 
-    <div className={secao === 'conceito' ? 'secao oculto' : 'secao'}>
-      <div className="lab-shell">
+    <div className={secao === 'laboratorio' || secao === 'desafio' ? 'secao' : 'secao oculto'}>
+      <div className="lab-shell" onChange={() => setLabVisitado(true)} onClick={e => { if (e.target.closest('button')) setLabVisitado(true) }}>
         <aside className="controls-panel">
           <div className="panel-title"><span className="pulse"></span> TABELA DE UTILIDADE</div>
           <p className="tabela-ajuda">
@@ -202,6 +203,7 @@ export default function LabConsumidor({ abrirDesafio = 0 }) {
         </div>
       </div>
 
+      {secao === 'laboratorio' && <PassoEntender onClick={() => irPara('conceito')} />}
       {secao === 'desafio' && (
         <Desafio rodada={rodada} respostas={respostas} setRespostas={setRespostas}
                  acertos={acertos} rodadas={rodadas} completa={rodadaCompleta} onNovaRodada={novaRodada} />
@@ -225,7 +227,7 @@ function Desafio({ rodada, respostas, setRespostas, acertos, rodadas, completa, 
   return (
     <div className="metas">
       <div className="metas-topo">
-        <span className="market-label">2.2 · DESAFIO</span>
+        <span className="market-label">2.4 · APLICAR</span>
         <span className="metas-contador">
           {acertos} de {rodada.length}
           {rodadas > 0 && <> · {rodadas} {rodadas === 1 ? 'rodada' : 'rodadas'}</>}

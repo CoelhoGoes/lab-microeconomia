@@ -1856,3 +1856,137 @@ footer b {
   margin-right: 8px;
   vertical-align: 1px;
 }
+/* Jornada de descoberta: mapa, previsão e atividades das aulas 9 a 12. */
+.microlab-jornada h1, .microlab-jornada h2, .microlab-jornada h3 { font-family: 'Playfair Display', Georgia, serif; font-weight: 500; }
+.microlab-jornada button:disabled { cursor: default; opacity: .5; }
+.microlab-jornada :focus-visible { outline: 3px solid var(--blue); outline-offset: 4px; }
+.microlab-jornada [id] { scroll-margin-top: 100px; }
+.atalho-mapa { color: var(--teal); font-size: 12px; font-weight: 700; text-decoration: none; }
+.jornada-hero { padding: 65px 7.5vw 55px; display: grid; grid-template-columns: 1.5fr 1fr; gap: 70px; background: radial-gradient(ellipse at right top, var(--mint), transparent 65%); }
+.jornada-hero h1 { font-size: clamp(44px, 5vw, 76px); line-height: 1.05; letter-spacing: -.04em; margin: 0 0 23px; }
+.jornada-hero h1 em { color: var(--teal); font-weight: 400; }
+.jornada-hero > div > p:not(.eyebrow) { max-width: 470px; font-size: 16px; line-height: 1.7; color: var(--muted); margin: 0 0 26px; }
+.hero-caderno { align-self: center; background: var(--paper); border: 1px solid var(--teal); border-radius: 8px; padding: 25px 30px; max-width: 400px; transform: rotate(1deg); box-shadow: 8px 8px 0 var(--mint); }
+.caderno-etiqueta { font: 10px 'DM Mono', monospace; color: var(--teal); letter-spacing: .16em; }
+.hero-caderno ol { padding: 0; margin: 18px 0; list-style: none; display: grid; gap: 15px; }
+.hero-caderno li { display: flex; gap: 18px; align-items: center; }
+.hero-caderno li > b { font: 12px 'DM Mono', monospace; color: var(--teal); border: 1px solid var(--mint); padding: 8px; border-radius: 50%; }
+.hero-caderno li span { font-weight: 700; font-size: 14px; }
+.hero-caderno li small { display: block; font-weight: 400; color: var(--muted); font-size: 11px; margin-top: 3px; }
+.hero-caderno > p { border-top: 1px solid var(--mint); padding-top: 14px; font-size: 11px; color: var(--muted); margin-bottom: 0; }
+.mapa-section { padding: 48px 7.5vw 55px; }
+.mapa-heading { display: flex; justify-content: space-between; align-items: center; gap: 25px; margin-bottom: 28px; }
+.mapa-heading .eyebrow { margin-bottom: 12px; }
+.mapa-heading h2 { margin: 0; font-size: clamp(28px, 3vw, 38px); }
+.progresso-geral { min-width: 190px; }
+.progresso-geral strong { font: 22px 'DM Mono', monospace; }
+.progresso-geral strong span { font-size: 11px; color: var(--muted); }
+.progresso-geral p { font-size: 10px; color: var(--muted); }
+.progresso-geral progress { width: 100%; height: 5px; accent-color: var(--teal); }
+.mapa-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
+.tema-card { display: flex; flex-direction: column; text-align: left; border: 1px solid color-mix(in srgb, var(--muted) 25%, transparent); background: var(--paper); color: var(--ink); padding: 18px 16px 13px; border-radius: 6px; transition: transform .15s, border-color .15s; min-width: 0; }
+.tema-card:hover { border-color: var(--teal); transform: translateY(-3px); }
+.tema-card.tema-ativo { border: 2px solid var(--teal); padding: 17px 15px 12px; background: color-mix(in srgb, var(--mint) 22%, var(--paper)); }
+.tema-card-topo { display: flex; justify-content: space-between; align-items: center; gap: 5px; font: 9px 'DM Mono', monospace; color: var(--teal); margin-bottom: 17px; }
+.selo-novo { background: var(--mint); padding: 3px 4px; border-radius: 3px; font-size: 8px; }
+.tema-card > small { font-size: 9px; color: var(--muted); }
+.tema-card h3 { font-size: 21px; line-height: 1.2; margin: 7px 0 10px; }
+.tema-card > p { font-size: 11px; line-height: 1.65; margin: 0 0 17px; color: var(--muted); }
+.tema-card-rodape { display: flex; justify-content: space-between; margin-top: auto; font: 9px 'DM Mono', monospace; color: var(--teal); }
+.tema-barra { height: 3px; background: var(--cream); margin-top: 10px; display: block; }
+.tema-barra i { display: block; height: 3px; background: var(--teal); }
+.jornada-lab { padding: 45px 7.5vw; border-top: 1px solid color-mix(in srgb, var(--muted) 20%, transparent); }
+.jornada-lab .lab-heading { margin-bottom: 25px; }
+.jornada-lab .lab-heading h2 { font-size: clamp(32px, 3.5vw, 48px); }
+.troca-tema { display: flex; gap: 15px; align-items: center; border-bottom: 1px solid var(--mint); padding-bottom: 23px; margin-bottom: 28px; font-size: 12px; }
+.troca-tema label { font-weight: 700; }
+.troca-tema select { max-width: 440px; flex: 1; }
+.troca-tema a { margin-left: auto; color: var(--teal); text-decoration: none; }
+.microlab-jornada select, .atividade input { font: inherit; font-size: 13px; border: 1px solid color-mix(in srgb, var(--muted) 50%, transparent); padding: 12px; background: var(--paper); color: var(--ink); border-radius: 4px; max-width: 100%; }
+.microlab-jornada .secoes ul { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.previsao-card { border: 1px solid color-mix(in srgb, var(--teal) 25%, transparent); background: var(--paper); border-radius: 8px; padding: 36px; }
+.previsao-card h3, .atividade h3 { font-size: clamp(28px, 3vw, 38px); margin: 0 0 20px; }
+.caso-abertura { font-size: 17px; line-height: 1.7; max-width: 740px; }
+.previsao-opcoes { border: 0; padding: 0; margin: 25px 0; display: grid; gap: 10px; max-width: 780px; }
+.previsao-opcoes legend { margin-bottom: 15px; font-weight: 700; line-height: 1.6; }
+.previsao-opcoes label { display: flex; align-items: baseline; gap: 12px; padding: 14px 18px; background: var(--cream); border: 1px solid transparent; border-radius: 4px; font-size: 14px; line-height: 1.5; cursor: pointer; }
+.previsao-opcoes label.selecionada { border-color: var(--teal); background: color-mix(in srgb, var(--mint) 35%, var(--paper)); }
+.previsao-opcoes input, .check-controle input { accent-color: var(--teal); flex-shrink: 0; }
+.jornada-acoes { display: flex; align-items: center; gap: 22px; flex-wrap: wrap; }
+.reflexao { padding: 23px 28px; border-left: 4px solid var(--teal); background: color-mix(in srgb, var(--mint) 35%, var(--paper)); margin: 0 0 25px; border-radius: 0 6px 6px 0; font-size: 14px; line-height: 1.8; }
+.reflexao p { margin: 0 0 9px; }
+.reflexao .eyebrow { font-size: 10px; }
+.reflexao span { display: block; color: var(--teal); }
+.passo-entender { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 22px 0; margin-bottom: 10px; }
+.passo-entender p { color: var(--muted); font-size: 13px; max-width: 480px; line-height: 1.6; }
+.microlab-jornada .conceito { max-width: none; }
+.microlab-jornada .conceito > p { max-width: 860px; }
+.novas-metricas { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 15px; margin: 20px 0; }
+.novas-metricas > div { padding: 16px 12px; border-top: 1px solid var(--mint); min-width: 0; background: var(--paper); }
+.novas-metricas dt { font: 9px 'DM Mono', monospace; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); line-height: 1.5; }
+.novas-metricas dd { font: 20px 'DM Mono', monospace; margin: 8px 0 0; color: var(--teal); overflow-wrap: anywhere; }
+.grafico-novo { margin: 20px 0; }
+.grafico-novo svg { width: 100%; height: auto; display: block; }
+.grafico-novo figcaption { display: flex; gap: 18px; flex-wrap: wrap; font-size: 10px; color: var(--muted); }
+.grafico-novo figcaption span { display: inline-flex; align-items: center; gap: 7px; }
+.grafico-novo figcaption i { width: 14px; height: 3px; display: inline-block; }
+.microlab-jornada .lab-shell { margin-bottom: 25px; }
+.microlab-jornada .market-panel > h3 { font-size: 29px; line-height: 1.3; margin: 0 0 22px; }
+.microlab-jornada .controls-panel > p:not(.panel-title) { font-size: 12px; line-height: 1.8; color: var(--muted); }
+.campo-select { display: grid; gap: 10px; font-size: 12px; margin: 20px 0; }
+.check-controle { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; line-height: 1.8; margin: 22px 0; cursor: pointer; }
+.check-controle input { margin-top: 6px; }
+.matriz-bens { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.matriz-bens article { padding: 20px; border: 1px solid color-mix(in srgb, var(--muted) 30%, transparent); border-radius: 6px; }
+.matriz-bens .bem-ativo { border: 2px solid var(--teal); padding: 19px; background: color-mix(in srgb, var(--mint) 35%, var(--paper)); }
+.matriz-bens b { font-size: 13px; }
+.matriz-bens p { font-size: 12px; line-height: 1.8; color: var(--muted); }
+.matriz-bens span { color: var(--teal); font: 10px 'DM Mono', monospace; }
+.tabela-scroll { overflow-x: auto; margin: 20px 0; }
+.dados-tabela { border-collapse: collapse; width: 100%; text-align: right; font-size: 12px; font-variant-numeric: tabular-nums; }
+.dados-tabela caption { text-align: left; color: var(--muted); font-size: 11px; padding-bottom: 15px; }
+.dados-tabela th, .dados-tabela td { padding: 12px 10px; border-bottom: 1px solid color-mix(in srgb, var(--muted) 18%, transparent); white-space: nowrap; }
+.dados-tabela th:first-child { text-align: left; }
+.dados-tabela thead th { font-size: 10px; color: var(--teal); }
+.dados-tabela .linha-ativa { background: var(--mint); }
+.peso-barra { height: 3px; width: 100%; margin-top: 7px; background: var(--cream); }
+.peso-barra i { height: 3px; display: block; background: var(--teal); }
+.complemento { border: 1px solid color-mix(in srgb, var(--muted) 25%, transparent); background: var(--paper); padding: 20px 25px; margin-bottom: 15px; border-radius: 6px; }
+.complemento summary { cursor: pointer; color: var(--teal); font-weight: 700; font-size: 13px; line-height: 1.6; }
+.complemento > p { font-size: 12px; color: var(--muted); line-height: 1.8; }
+.atividade { background: var(--paper); border: 1px solid color-mix(in srgb, var(--teal) 20%, transparent); border-radius: 6px; padding: 32px; }
+.atividade > p { font-size: 13px; line-height: 1.8; color: var(--muted); max-width: 760px; }
+.atividade-questao { border-top: 1px solid var(--mint); padding: 23px 0; display: grid; gap: 14px; }
+.atividade-questao > label { font-size: 14px; line-height: 1.8; max-width: 800px; }
+.atividade-questao select { width: min(100%, 600px); }
+.resposta-numero { display: flex; align-items: center; gap: 14px; font-size: 12px; }
+.resposta-numero input { width: 180px; min-width: 0; }
+.feedback { font-size: 12px; line-height: 1.8; margin: 0; padding: 12px 15px; border-left: 3px solid var(--teal); }
+.feedback.certo { background: color-mix(in srgb, var(--mint) 40%, var(--paper)); }
+.feedback.rever { border-color: var(--coral); background: var(--cream); }
+.fonte-aula { font-size: 10px; color: var(--muted); line-height: 1.8; margin: 22px 0; }
+.proximos-temas { display: flex; justify-content: space-between; margin-top: 25px; }
+.concept-card { display: flex; flex-direction: column; }
+.concept-card small { position: static; margin-top: auto; }
+@media (max-width: 1100px) { .mapa-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } .jornada-hero { gap: 35px; } }
+@media (max-width: 850px) { .jornada-hero { grid-template-columns: 1fr 1fr; padding: 45px 6vw; gap: 25px; } .hero-caderno { padding: 22px; } .mapa-section, .jornada-lab { padding: 35px 6vw; } .mapa-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .jornada-lab .lab-shell { grid-template-columns: 1fr; } .microlab-jornada .secoes ul { grid-template-columns: repeat(2, minmax(0, 1fr)); } .novas-metricas dd { font-size: 18px; } }
+@media (max-width: 560px) { .microlab-jornada .topbar { padding: 0 6vw; height: 66px; } .course-pill { display: none; } .jornada-hero { grid-template-columns: 1fr; gap: 30px; } .jornada-hero h1 { font-size: 46px; } .hero-caderno { width: 100%; max-width: none; transform: none; } .hero-caderno ol { grid-template-columns: 1fr 1fr; gap: 18px 10px; } .hero-caderno li { gap: 8px; align-items: flex-start; } .hero-caderno li > b { font-size: 10px; padding: 6px; } .hero-caderno li small { line-height: 1.5; } .mapa-heading { flex-direction: column; align-items: stretch; gap: 20px; } .progresso-geral { width: 100%; } .mapa-grid { gap: 10px; } .tema-card { padding: 14px 12px; } .tema-card.tema-ativo { padding: 13px 11px; } .tema-card h3 { font-size: 21px; } .tema-card-topo { font-size: 8px; gap: 3px; flex-wrap: wrap; margin-bottom: 12px; } .tema-card > p { font-size: 11px; } .troca-tema { flex-wrap: wrap; gap: 10px; } .troca-tema label { width: 100%; } .troca-tema select { flex-basis: 100%; width: 100%; } .troca-tema a { margin-left: 0; } .previsao-card, .atividade { padding: 23px 19px; } .caso-abertura { font-size: 15px; } .previsao-opcoes label { font-size: 13px; padding: 12px; } .reflexao { padding: 20px; } .passo-entender { flex-direction: column; align-items: stretch; gap: 10px; } .novas-metricas { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; } .novas-metricas dd { font-size: 17px; } .matriz-bens { grid-template-columns: 1fr; } .microlab-jornada .market-panel > h3 { font-size: 25px; } .resposta-numero { flex-wrap: wrap; } .resposta-numero input { width: 150px; } .proximos-temas .text-button { font-size: 11px; } }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .tema-card { transition: none; } }
+/* Contraste das novas atividades dentro da moldura escura do laboratório. */
+.previsao-card, .atividade, .complemento, .reflexao { color: var(--ink); }
+.microlab-jornada .secoes ul { display: grid; }
+.microlab-jornada .secoes li { min-width: 0; }
+.jornada-acoes .text-button { color: var(--teal); }
+.passo-entender > p, .fonte-aula { color: var(--mint); opacity: .85; }
+.proximos-temas .text-button { color: var(--mint); }
+.market-panel > .insight { font-size: 12px; line-height: 1.8; display: block; }
+.secoes-topo { gap: 15px; }
+@media (max-width: 560px) { .secoes-topo { flex-direction: column; gap: 8px; } .secao-item { padding: 12px 9px; gap: 6px; } }
+
+.jornada-lab .troca-tema a { color: var(--mint); }
+.jornada-lab .controls-panel > .panel-title, .jornada-lab .controls-panel > p, .jornada-lab .controls-panel > .campo-select { grid-column: 1 / -1; }
+.tabela-preencher input { width: 76px; padding: 10px 6px; text-align: right; color: var(--ink); font: 12px 'DM Mono', monospace; background: var(--paper); border: 1px solid var(--muted); border-radius: 3px; }
+.tabela-preencher input[aria-invalid="true"] { border: 2px solid var(--coral); background: var(--cream); }
+.complemento .text-button { color: var(--teal); }
+.secoes { scroll-margin-top: 95px; }
+@media (max-width: 560px) { .secao-num { display: none; } .secao-item { font-size: 11px; } }

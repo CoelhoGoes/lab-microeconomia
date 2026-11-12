@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useRef } from 'react'
 
 // Navegação em seções de um módulo, no formato da Cisco Networking Academy:
 // contador de conclusão, barra de progresso e a lista numerada.
@@ -8,9 +8,23 @@ import React from 'react'
 // contador do desafio; tudo isso entra por prop.
 export default function SecoesDoModulo({ rotulo, secoes, ativa, concluidas, contador, onIr }) {
   const feitas = secoes.filter(sec => concluidas[sec.id]).length
+  const nav = useRef(null)
+  const anterior = useRef(ativa)
+  useEffect(() => {
+    if (anterior.current !== ativa) nav.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    anterior.current = ativa
+  }, [ativa])
+
+  const numero = Number(rotulo.match(/MÓDULO (\d+)/)?.[1])
+  useEffect(() => {
+    try {
+      localStorage.setItem(`microlab:progresso:${numero}`, JSON.stringify({ feitas, total: secoes.length }))
+      window.dispatchEvent(new Event('microlab:progresso'))
+    } catch { /* Progresso funciona nesta sessão mesmo sem armazenamento. */ }
+  }, [numero, feitas, secoes.length])
 
   return (
-    <nav className="secoes" aria-label="Seções do módulo">
+    <nav ref={nav} className="secoes" aria-label="Seções do módulo">
       <div className="secoes-topo">
         <span className="secoes-rotulo">{rotulo}</span>
         <span className="secoes-progresso">{feitas} de {secoes.length} concluídas</span>

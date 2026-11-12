@@ -1,16 +1,18 @@
-import React from 'react'
+import React, { useId } from 'react'
 
 // `value` é sempre o número que o input consome; `exibicao` é o texto opcional
 // mostrado ao aluno. Separar os dois evita passar string formatada ao
 // <input type="range">, que a descarta em silêncio e trava o thumb no meio da faixa.
 export default function Slider({ label, value, exibicao, min, max, step = 1, suffix = '', onChange, hint, disabled = false }) {
+  const id = useId()
   return (
     <div className="control">
       <div className="control-top">
-        <label>{label}</label>
+        <label htmlFor={id}>{label}</label>
         <output>{exibicao ?? value}{suffix}</output>
       </div>
       <input
+        id={id}
         type="range"
         min={min}
         max={max}

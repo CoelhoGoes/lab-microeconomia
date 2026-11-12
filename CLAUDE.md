@@ -44,8 +44,8 @@ Perguntar custa uma mensagem. Refazer trabalho errado custa muito mais.
 
 ## 2. Conteúdo da disciplina
 
-O projeto acompanha a ementa de Microeconomia **até Estruturas de Mercado**, na sequência em
-que os temas são dados em aula. Os seis temas têm laboratório. **Todos aparecem como aba**, mesmo sem lab: o aluno
+O projeto acompanha a ementa de Microeconomia **até Custos, Receitas e Resultado**, na sequência em
+que os temas são dados em aula. Os dez temas têm laboratório. **Todos aparecem como aba**, mesmo sem lab: o aluno
 precisa enxergar onde o que está manipulando se encaixa no curso inteiro.
 
 | # | Tema | Lab | Estado |
@@ -65,7 +65,7 @@ tema: ela é a fonte sobre o recorte que a aula exige.
 As notas são texto próprio, em termos genéricos de microeconomia. Os slides da disciplina são
 material do professor e **não são redistribuídos neste repositório**.
 
-Os labs compartilham o mesmo mercado (café) e as mesmas curvas, vindas de `shared/modelo.js`.
+Os labs de demanda, oferta e equilíbrio compartilham o mercado de café e as curvas de `shared/modelo.js`.
 É intencional: o aluno reconhece o mesmo mercado em cada lab e só o recorte muda.
 
 ---
@@ -130,15 +130,9 @@ src/
     persistencia.js           # estado que sobrevive ao reload (localStorage)
 ```
 
-**Navegação e estado.** As abas seguem a ordem da ementa (`TEMAS` em `main.jsx`), numeradas
-de 01 a 06; as sem laboratório ficam desabilitadas e marcadas "em breve". `main.jsx` mantém
-todos os labs montados e esconde os inativos com `.lab-painel.oculto`. É o que preserva o cenário de cada eixo quando o aluno alterna de aba —
-desmontar zeraria os sliders. O botão do desafio troca a `key` do lab de demanda e oferta para remontá-lo
-com um cenário pronto, sem estado global e sem o lab precisar saber que o desafio existe.
+**Navegação e estado.** O mapa inicial reúne dez experiências em ordem da disciplina. `main.jsx` mantém os labs montados e esconde os inativos, preservando os cenários ao alternar temas. A seleção também pode ser feita pelo seletor de tema ou pelo fragmento da URL.
 
-**Formato de módulo.** Um tema não é um laboratório solto: apresenta-se em seções numeradas
-(`4.0 Conceito`, `4.1 Laboratório`, `4.2 Desafio`) com progresso por seção, como na Cisco
-Networking Academy. `labs/equilibrio.jsx` é a referência do formato.
+**Formato de módulo.** Todos seguem quatro seções: Prever, Experimentar, Entender e Aplicar. A navegação é livre. `shared/Previsao.jsx` apresenta uma situação e retoma a hipótese na explicação; `shared/Jornada.jsx` fornece a moldura dos quatro temas novos. Os seis anteriores mantêm suas avaliações e visualizações específicas.
 
 **Cada tema avalia à sua maneira, e desenha à sua maneira.** O diagrama de Marshall serve só
 aos temas 3 e 4, onde é o desenho canônico; aplicá-lo aos demais seria forçar a forma errada.
@@ -264,3 +258,14 @@ Se o build voltar a falhar com `Permission denied` no `.bin/vite` ou com erro de
 binding nativo, a causa é essa e a correção é reinstalar do zero.
 
 Ausências conhecidas: não há CI, deploy nem linter — ver `TODO.md`.
+
+
+## Atualização de 12/11/2026 — percurso por descoberta
+
+Autorizado pelo usuário: substituir o fluxo explicação inicial por Prever → Experimentar → Entender → Aplicar nos dez temas. O mapa substitui a abertura genérica e a navegação principal por abas; todos os labs continuam montados, preservando os cenários ao alternar temas.
+
+`shared/Previsao.jsx` contém os casos de previsão e a retomada da hipótese. `shared/Jornada.jsx` fornece moldura, atividades, métricas e gráfico genérico (não substitui o diagrama de Marshall). `shared/SecoesDoModulo.jsx` publica o progresso por módulo. A previsão vale pela tentativa, a experimentação exige interação e as aplicações exigem resolução. Não há bloqueio de acesso entre etapas.
+
+Novos labs: publicos (07), tributacao (08), producao (09), custos (10). Modelos puros e testes em `labs/firma.js` e `labs/firma.test.mjs`; as premissas e fontes estão nas respectivas notas em docs/conteudo. O último tema usa a planilha como complemento da aula 12.
+
+O comando `npm test` usa `node --test`, pois aspas simples no glob anterior faziam o Windows executar zero testes. Sem novas dependências. A identidade visual, SVG manual e estado local foram mantidos. O botão sem função de resumo e a órbita estática saíram com a antiga abertura.

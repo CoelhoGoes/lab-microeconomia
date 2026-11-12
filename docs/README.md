@@ -1,7 +1,7 @@
 # Conteúdo do curso
 
 Notas de referência dos temas da disciplina de Microeconomia que o MicroLab cobre, na
-sequência em que são dados em aula, **até Estruturas de Mercado**.
+sequência em que são dados em aula, **até Custos, Receitas e Resultado**.
 
 ## Por que estas notas existem
 
@@ -17,12 +17,16 @@ disciplina, que são material do professor e não são redistribuídos aqui.
 
 | # | Tema | Lab |
 |---|---|---|
-| 1 | [Custo de oportunidade](conteudo/01-custo-de-oportunidade.md) | — |
-| 2 | [Teoria do consumidor](conteudo/02-teoria-do-consumidor.md) | — |
-| 3 | [Demanda e oferta](conteudo/03-demanda-e-oferta.md) | `labs/substitutos.jsx` (parcial) |
+| 1 | [Custo de oportunidade](conteudo/01-custo-de-oportunidade.md) | `labs/oportunidade.jsx` |
+| 2 | [Teoria do consumidor](conteudo/02-teoria-do-consumidor.md) | `labs/consumidor.jsx` |
+| 3 | [Demanda e oferta](conteudo/03-demanda-e-oferta.md) | `labs/substitutos.jsx` |
 | 4 | [Equilíbrio de mercado](conteudo/04-equilibrio-de-mercado.md) | `labs/equilibrio.jsx` |
-| 5 | [Elasticidades](conteudo/05-elasticidades.md) | a construir |
-| 6 | [Estruturas de mercado](conteudo/06-estruturas-de-mercado.md) | — |
+| 5 | [Elasticidades](conteudo/05-elasticidades.md) | `labs/elasticidades.jsx` |
+| 6 | [Estruturas de mercado](conteudo/06-estruturas-de-mercado.md) | `labs/estruturas.jsx` |
+| 7 | [Bens públicos e riscos](conteudo/07-bens-publicos-e-riscos.md) | `labs/publicos.jsx` |
+| 8 | [Tributação](conteudo/08-tributacao.md) | `labs/tributacao.jsx` |
+| 9 | [Produção e rendimentos](conteudo/09-producao-e-rendimentos.md) | `labs/producao.jsx` |
+| 10 | [Custos, receitas e resultado](conteudo/10-custos-e-receitas.md) | `labs/custos.jsx` |
 
 ## Bibliografia de referência da disciplina
 

@@ -1,16 +1,14 @@
 import React, { useEffect, useState } from 'react'
 import { usePersistido } from '../shared/persistencia.js'
 import SecoesDoModulo from '../shared/SecoesDoModulo.jsx'
+import Previsao, { Reflexao } from '../shared/Previsao.jsx'
+import { criarSecoes, PassoEntender } from '../shared/Jornada.jsx'
 import {
   classificar, gerarRodada, enunciado,
   ESTRUTURAS, QUANTIDADES, FORA_DO_RECORTE,
 } from './estruturas.js'
 
-const SECOES = [
-  { id: 'conceito', numero: '6.0', titulo: 'Conceito' },
-  { id: 'laboratorio', numero: '6.1', titulo: 'Laboratório' },
-  { id: 'desafio', numero: '6.2', titulo: 'Desafio' },
-]
+const SECOES = criarSecoes(6)
 
 const ROTULO = { um: 'Um', dois: 'Dois', poucos: 'Poucos', muitos: 'Muitos' }
 const OPCOES = Object.keys(ESTRUTURAS)
@@ -19,9 +17,10 @@ export default function LabEstruturas({ abrirDesafio = 0 }) {
   const [vendedores, setVendedores] = useState('muitos')
   const [compradores, setCompradores] = useState('muitos')
   const [diferenciado, setDiferenciado] = useState(false)
-  const [secao, setSecao] = useState('conceito')
+  const [secao, setSecao] = useState('previsao')
+  const [previsao, setPrevisao] = usePersistido('microlab:estruturas:previsao', null)
   const [conceitoLido, setConceitoLido] = usePersistido('microlab:estruturas:conceito', false)
-  const [labVisitado, setLabVisitado] = usePersistido('microlab:estruturas:lab', false)
+  const [labVisitado, setLabVisitado] = usePersistido('microlab:estruturas:experimento-v2', false)
   const [rodadas, setRodadas] = usePersistido('microlab:estruturas:rodadas', 0)
   const [rodada, setRodada] = useState(() => gerarRodada())
   const [respostas, setRespostas] = useState({})
@@ -41,11 +40,10 @@ export default function LabEstruturas({ abrirDesafio = 0 }) {
     setRespostas({})
   }
 
-  const secaoOk = { conceito: conceitoLido, laboratorio: labVisitado, desafio: rodadas > 0 }
+  const secaoOk = { previsao: previsao !== null, conceito: conceitoLido, laboratorio: labVisitado, desafio: rodadas > 0 }
 
   const irPara = id => {
     setSecao(id)
-    if (id !== 'conceito') setLabVisitado(true)
   }
 
   // A faixa "Desafio rápido" da página pede a abertura desta seção. Vem como
@@ -67,9 +65,12 @@ export default function LabEstruturas({ abrirDesafio = 0 }) {
       onIr={irPara}
     />
 
+    {secao === 'previsao' && <Previsao tema="estruturas" resposta={previsao} onResponder={setPrevisao} onContinuar={() => irPara('laboratorio')} />}
+    {secao === 'conceito' && <Reflexao tema="estruturas" resposta={previsao} />}
+
     {secao === 'conceito' && (
       <div className="conceito">
-        <p className="eyebrow">6.0 · CONCEITO</p>
+        <p className="eyebrow">6.3 · ENTENDER</p>
         <h3>Quem tem poder sobre o preço, e por quê</h3>
         <p>
           Duas perguntas classificam qualquer mercado: <b>quantos agentes</b> há de cada lado, e
@@ -98,14 +99,14 @@ export default function LabEstruturas({ abrirDesafio = 0 }) {
           <b> concentração horizontal</b> une agentes que ofertam produtos substitutos entre si; a
           <b> vertical</b>, agentes de etapas diferentes da mesma cadeia produtiva.
         </p>
-        <button className="button primary" onClick={() => { setConceitoLido(true); irPara('laboratorio') }}>
-          {conceitoLido ? 'Reler e ir ao laboratório' : 'Entendi, ir ao laboratório'} <span>→</span>
+        <button className="button primary" onClick={() => { setConceitoLido(true); irPara('desafio') }}>
+          {conceitoLido ? 'Ir para a aplicação' : 'Entendi, aplicar em outro caso'} <span>→</span>
         </button>
       </div>
     )}
 
-    <div className={secao === 'conceito' ? 'secao oculto' : 'secao'}>
-      <div className="lab-shell">
+    <div className={secao === 'laboratorio' || secao === 'desafio' ? 'secao' : 'secao oculto'}>
+      <div className="lab-shell" onChange={() => setLabVisitado(true)} onClick={e => { if (e.target.closest('button')) setLabVisitado(true) }}>
         <aside className="controls-panel">
           <div className="panel-title"><span className="pulse"></span> COMO É ESTE MERCADO</div>
           <p className="tabela-ajuda">
@@ -203,6 +204,7 @@ export default function LabEstruturas({ abrirDesafio = 0 }) {
         </div>
       </div>
 
+      {secao === 'laboratorio' && <PassoEntender onClick={() => irPara('conceito')} />}
       {secao === 'desafio' && (
         <Desafio rodada={rodada} respostas={respostas} setRespostas={setRespostas}
                  acertos={acertos} rodadas={rodadas} completa={rodadaCompleta} onNovaRodada={novaRodada} />
@@ -226,7 +228,7 @@ function Desafio({ rodada, respostas, setRespostas, acertos, rodadas, completa, 
   return (
     <div className="metas">
       <div className="metas-topo">
-        <span className="market-label">6.2 · DESAFIO</span>
+        <span className="market-label">6.4 · APLICAR</span>
         <span className="metas-contador">
           {acertos} de {rodada.length}
           {rodadas > 0 && <> · {rodadas} {rodadas === 1 ? 'rodada' : 'rodadas'}</>}

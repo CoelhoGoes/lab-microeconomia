@@ -4,6 +4,8 @@ import Chart from '../shared/Chart.jsx'
 import { num } from '../shared/formato.js'
 import { usePersistido } from '../shared/persistencia.js'
 import SecoesDoModulo from '../shared/SecoesDoModulo.jsx'
+import Previsao, { Reflexao } from '../shared/Previsao.jsx'
+import { criarSecoes, PassoEntender } from '../shared/Jornada.jsx'
 import { METAS } from './metas-equilibrio.js'
 import { CENARIOS, choquesDo } from './cenarios-equilibrio.js'
 import {
@@ -50,11 +52,7 @@ const COR_STATUS = { escassez: 'coral', excesso: 'blue', equilibrio: 'mint' }
 // O módulo se apresenta em seções, não como um lab solto. Laboratório e desafio
 // compartilham a MESMA instância do lab: o desafio avalia o estado que o aluno
 // produziu manipulando os controles, então o lab não pode remontar entre as duas.
-const SECOES = [
-  { id: 'conceito', numero: '4.0', titulo: 'Conceito' },
-  { id: 'laboratorio', numero: '4.1', titulo: 'Laboratório' },
-  { id: 'desafio', numero: '4.2', titulo: 'Desafio' },
-]
+const SECOES = criarSecoes(4)
 
 export default function LabEquilibrio({ abrirDesafio = 0 }) {
   const [preco, setPreco] = useState(PRECO_INICIAL)
@@ -62,9 +60,10 @@ export default function LabEquilibrio({ abrirDesafio = 0 }) {
   const [choqueOferta, setChoqueOferta] = useState(0)
   const [cenarioId, setCenarioId] = useState(null)
   const [ajustando, setAjustando] = useState(false)
-  const [secao, setSecao] = useState('conceito')
+  const [secao, setSecao] = useState('previsao')
+  const [previsao, setPrevisao] = usePersistido('microlab:equilibrio:previsao', null)
   const [conceitoLido, setConceitoLido] = usePersistido('microlab:equilibrio:conceito', false)
-  const [labVisitado, setLabVisitado] = usePersistido('microlab:equilibrio:lab', false)
+  const [labVisitado, setLabVisitado] = usePersistido('microlab:equilibrio:experimento-v2', false)
   const [feitas, setFeitas] = usePersistido('microlab:equilibrio:metas', [])
   // O cenário inicial já nasce com excesso de oferta. Sem esta trava, a meta
   // correspondente seria dada de graça a quem só abriu a aba.
@@ -140,17 +139,15 @@ export default function LabEquilibrio({ abrirDesafio = 0 }) {
   const leitura = LEITURA[mercado.tipo]
   const distancia = preco - mercado.equilibrio.preco
 
-  const secaoOk = {
+  const secaoOk = { previsao: previsao !== null,
     conceito: conceitoLido,
     laboratorio: labVisitado,
     desafio: feitas.length === METAS.length,
   }
 
-  // Entrar no laboratório ou no desafio já conta como visitar o laboratório —
-  // são a mesma tela, o desafio só acrescenta o painel de metas.
+  // O laboratório só conta como realizado depois de uma interação nos controles.
   const irPara = id => {
     setSecao(id)
-    if (id !== 'conceito') setLabVisitado(true)
   }
 
   // A faixa "Desafio rápido" da página pede a abertura desta seção. Vem como
@@ -172,12 +169,15 @@ export default function LabEquilibrio({ abrirDesafio = 0 }) {
       onIr={irPara}
     />
 
+    {secao === 'previsao' && <Previsao tema="equilibrio" resposta={previsao} onResponder={setPrevisao} onContinuar={() => irPara('laboratorio')} />}
+    {secao === 'conceito' && <Reflexao tema="equilibrio" resposta={previsao} />}
+
     {secao === 'conceito' && (
-      <Conceito lido={conceitoLido} onLido={() => { setConceitoLido(true); irPara('laboratorio') }} />
+      <Conceito lido={conceitoLido} onLido={() => { setConceitoLido(true); irPara('desafio') }} />
     )}
 
-    <div className={secao === 'conceito' ? 'secao oculto' : 'secao'}>
-    <div className="lab-shell">
+    <div className={secao === 'laboratorio' || secao === 'desafio' ? 'secao' : 'secao oculto'}>
+    <div className="lab-shell" onChange={() => setLabVisitado(true)} onClick={e => { if (e.target.closest('button')) setLabVisitado(true) }}>
       <aside className="controls-panel">
         <div className="panel-title"><span className="pulse"></span> CONTROLES DO CENÁRIO</div>
 
@@ -280,7 +280,8 @@ export default function LabEquilibrio({ abrirDesafio = 0 }) {
       </div>
     </div>
 
-    {secao === 'desafio' && <PainelMetas feitas={feitas} />}
+    {secao === 'laboratorio' && <PassoEntender onClick={() => irPara('conceito')} />}
+      {secao === 'desafio' && <PainelMetas feitas={feitas} />}
 
     <div className="insight">
       <span className="spark">✦</span>
@@ -302,7 +303,7 @@ export default function LabEquilibrio({ abrirDesafio = 0 }) {
 function Conceito({ lido, onLido }) {
   return (
     <div className="conceito">
-      <p className="eyebrow">4.0 · CONCEITO</p>
+      <p className="eyebrow">4.3 · ENTENDER</p>
       <h3>O preço que põe o mercado em repouso</h3>
       <p>
         O <b>equilíbrio</b> é o par de preço e quantidade em que tudo que se quer comprar é
@@ -327,7 +328,7 @@ function Conceito({ lido, onLido }) {
         diminui: preço e quantidade caem. No laboratório, cada caso é um botão.
       </p>
       <button className="button primary" onClick={onLido}>
-        {lido ? 'Reler e ir ao laboratório' : 'Entendi, ir ao laboratório'} <span>→</span>
+        {lido ? 'Ir para a aplicação' : 'Entendi, aplicar em outro caso'} <span>→</span>
       </button>
     </div>
   )
@@ -337,7 +338,7 @@ function PainelMetas({ feitas }) {
   return (
     <div className="metas">
       <div className="metas-topo">
-        <span className="market-label">4.2 · DESAFIO</span>
+        <span className="market-label">4.4 · APLICAR</span>
         <span className="metas-contador">{feitas.length} de {METAS.length}</span>
       </div>
       <p className="metas-intro">

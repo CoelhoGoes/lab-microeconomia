@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react'
 import { num } from '../shared/formato.js'
 import { usePersistido } from '../shared/persistencia.js'
 import SecoesDoModulo from '../shared/SecoesDoModulo.jsx'
+import Previsao, { Reflexao } from '../shared/Previsao.jsx'
+import { criarSecoes, PassoEntender } from '../shared/Jornada.jsx'
 import { avaliar, custoOportunidade, gerarRodada } from './oportunidade.js'
 
 const VALOR_MAX = 600
@@ -53,18 +55,15 @@ function FronteiraDeProducao() {
   )
 }
 
-const SECOES = [
-  { id: 'conceito', numero: '1.0', titulo: 'Conceito' },
-  { id: 'laboratorio', numero: '1.1', titulo: 'Laboratório' },
-  { id: 'desafio', numero: '1.2', titulo: 'Desafio' },
-]
+const SECOES = criarSecoes(1)
 
 export default function LabOportunidade({ abrirDesafio = 0 }) {
   const [alternativas, setAlternativas] = useState(ALTERNATIVAS_PADRAO)
   const [escolhidaId, setEscolhidaId] = useState('loja')
-  const [secao, setSecao] = useState('conceito')
+  const [secao, setSecao] = useState('previsao')
+  const [previsao, setPrevisao] = usePersistido('microlab:oportunidade:previsao', null)
   const [conceitoLido, setConceitoLido] = usePersistido('microlab:oportunidade:conceito', false)
-  const [labVisitado, setLabVisitado] = usePersistido('microlab:oportunidade:lab', false)
+  const [labVisitado, setLabVisitado] = usePersistido('microlab:oportunidade:experimento-v2', false)
   const [rodadas, setRodadas] = usePersistido('microlab:oportunidade:rodadas', 0)
   const [rodada, setRodada] = useState(() => gerarRodada())
   const [respostas, setRespostas] = useState({})
@@ -92,11 +91,10 @@ export default function LabOportunidade({ abrirDesafio = 0 }) {
     setAlternativas(atuais => atuais.map(a => (a.id === id ? { ...a, valor: limpo } : a)))
   }
 
-  const secaoOk = { conceito: conceitoLido, laboratorio: labVisitado, desafio: rodadas > 0 }
+  const secaoOk = { previsao: previsao !== null, conceito: conceitoLido, laboratorio: labVisitado, desafio: rodadas > 0 }
 
   const irPara = id => {
     setSecao(id)
-    if (id !== 'conceito') setLabVisitado(true)
   }
 
   // A faixa "Desafio rápido" da página pede a abertura desta seção. Vem como
@@ -118,9 +116,12 @@ export default function LabOportunidade({ abrirDesafio = 0 }) {
       onIr={irPara}
     />
 
+    {secao === 'previsao' && <Previsao tema="oportunidade" resposta={previsao} onResponder={setPrevisao} onContinuar={() => irPara('laboratorio')} />}
+    {secao === 'conceito' && <Reflexao tema="oportunidade" resposta={previsao} />}
+
     {secao === 'conceito' && (
       <div className="conceito">
-        <p className="eyebrow">1.0 · CONCEITO</p>
+        <p className="eyebrow">1.3 · ENTENDER</p>
         <h3>O que a escolha custou não está na nota fiscal</h3>
         <p>
           Recursos são limitados e desejos não. Toda escolha implica abrir mão de outra, e o
@@ -156,14 +157,14 @@ export default function LabOportunidade({ abrirDesafio = 0 }) {
           custaria produzi-lo (2). A troca compensa para os dois sempre que o preço combinado fica
           entre os custos de oportunidade de cada um.
         </p>
-        <button className="button primary" onClick={() => { setConceitoLido(true); irPara('laboratorio') }}>
-          {conceitoLido ? 'Reler e ir ao laboratório' : 'Entendi, ir ao laboratório'} <span>→</span>
+        <button className="button primary" onClick={() => { setConceitoLido(true); irPara('desafio') }}>
+          {conceitoLido ? 'Ir para a aplicação' : 'Entendi, aplicar em outro caso'} <span>→</span>
         </button>
       </div>
     )}
 
-    <div className={secao === 'conceito' ? 'secao oculto' : 'secao'}>
-      <div className="lab-shell">
+    <div className={secao === 'laboratorio' || secao === 'desafio' ? 'secao' : 'secao oculto'}>
+      <div className="lab-shell" onChange={() => setLabVisitado(true)} onClick={e => { if (e.target.closest('button')) setLabVisitado(true) }}>
         <aside className="controls-panel">
           <div className="panel-title"><span className="pulse"></span> QUANTO CADA USO RENDE</div>
           <p className="tabela-ajuda">
@@ -243,6 +244,7 @@ export default function LabOportunidade({ abrirDesafio = 0 }) {
         </div>
       </div>
 
+      {secao === 'laboratorio' && <PassoEntender onClick={() => irPara('conceito')} />}
       {secao === 'desafio' && (
         <Desafio rodada={rodada} respostas={respostas} setRespostas={setRespostas}
                  acertos={acertos} rodadas={rodadas} completa={rodadaCompleta} onNovaRodada={novaRodada} />
@@ -267,7 +269,7 @@ function Desafio({ rodada, respostas, setRespostas, acertos, rodadas, completa, 
   return (
     <div className="metas">
       <div className="metas-topo">
-        <span className="market-label">1.2 · DESAFIO</span>
+        <span className="market-label">1.4 · APLICAR</span>
         <span className="metas-contador">
           {acertos} de {rodada.length}
           {rodadas > 0 && <> · {rodadas} {rodadas === 1 ? 'rodada' : 'rodadas'}</>}
