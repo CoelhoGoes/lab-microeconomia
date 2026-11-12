@@ -1,89 +1,40 @@
 # Preparação da apresentação
 
-O que fazer antes de subir ao palco, e o que fazer se a demonstração falhar.
+O roteiro atualizado cobre dez temas, quatro apresentadores e 20 minutos de fala, mais até 3 minutos de perguntas. A versão de 17 minutos está no roteiro.
 
----
+## Antes de apresentar
 
-## Na véspera
+- Execute `npm run build` e `npm test` na máquina da apresentação.
+- Execute `npm run dev` e use o endereço informado pelo terminal; a porta pode variar.
+- Abra uma janela anônima nova quando quiser iniciar sem o progresso do ensaio.
+- Deixe o mapa dos temas aberto. A navegação atual usa Prever, Experimentar, Entender e Aplicar.
+- Defina quem pilota o computador e faça um ensaio completo com cronômetro.
+- Salve um print de cada comparação antes e depois. São o plano de reserva.
+- Evite completar todos os desafios ou todas as células da tabela ao vivo.
 
-- [ ] `npm install` e `npm run build` rodando sem erro na máquina que vai ser usada.
-- [ ] Um **ensaio completo com cronômetro**, com as quatro pessoas e a troca de fala. As
-      passagens costumam custar mais tempo do que parece.
-- [ ] Durante o ensaio, **tire um print** de cada momento de "Na tela" do roteiro. É o plano B.
-- [ ] Combinar **quem pilota o computador** (ver abaixo).
+## Distribuição
 
-## Quem pilota
+Pessoa 1: abertura e temas 1, 2 e 6. Pessoa 2: temas 3, 4 e 5. Pessoa 3: temas 7 e 8. Pessoa 4: temas 9 e 10 e fechamento. Cada uma tem 5 minutos. A quantidade de temas varia para compensar densidade conceitual, contas e operações na tela.
 
-Duas opções, e vale decidir no ensaio:
+## Conferência dos exemplos
 
-- **Uma pessoa pilota a apresentação inteira**, seguindo as deixas do roteiro, enquanto as
-  outras falam. Recomendado: sem troca de lugar, sem procurar o cursor, sem perder tempo na
-  passagem.
-- **Cada um pilota a própria parte.** Mais natural para quem fala, mas cada troca custa uns
-  15 segundos — um minuto inteiro somando as três.
-
-## No dia, 15 minutos antes
-
-- [ ] `npm run dev` e confirmar que abre em `http://localhost:5173`.
-- [ ] Abrir o lab numa **janela anônima** (veja o porquê abaixo).
-- [ ] Confirmar que as **fontes carregaram**: os títulos devem estar em letra serifada e
-      elegante, não em Times ou Arial. Se estiverem em fonte genérica, falta internet.
-- [ ] Ajustar o **zoom do navegador** para o projetor — 125% costuma funcionar bem para quem
-      está no fundo da sala.
-- [ ] Desligar notificações do sistema e fechar abas que não sejam do lab.
-- [ ] Deixar a página rolada até a faixa de abas, que é onde a Parte 1 começa.
-
-### Por que janela anônima
-
-O lab **guarda o progresso no navegador**: seções concluídas, metas cumpridas, rodadas de
-desafio. Depois do ensaio, uma janela normal vai abrir com módulos já marcados como concluídos
-— e a demonstração perde o sentido.
-
-A janela anônima começa sempre do zero e apaga tudo ao fechar. De quebra, costuma vir sem
-extensões, o que evita bloqueador de anúncios derrubando as fontes.
-
-**Para zerar entre dois ensaios:** feche a janela anônima e abra outra.
-
----
-
-## Se algo der errado
-
-| Sintoma | Causa provável | O que fazer |
+| Responsável | Configuração | Resultado esperado |
 |---|---|---|
-| Títulos em fonte genérica | Sem internet: as fontes vêm do Google | Seguir normalmente — o lab funciona igual, só a tipografia muda |
-| Módulos já aparecem concluídos | Janela normal, com progresso do ensaio | Abrir uma janela anônima |
-| `npm run dev` não sobe, ou dá `Permission denied` | `node_modules/` de outra máquina | `rm -rf node_modules && npm install` |
-| Dev server instável | Qualquer problema do modo de desenvolvimento | `npm run build` e `npm run preview`, que serve a versão de produção |
-| Nada funciona | — | Seguir pelos prints do ensaio, narrando o que cada um mostra |
+| 1 | Terreno, loja escolhida | custo de oportunidade R$ 380; ganho R$ 40 |
+| 1 | Consumidor, preço R$ 9 e utilidades iniciais | 4 unidades; gasto R$ 36; excedente R$ 18 |
+| 2 | Equilíbrio, preço inicial R$ 34 | excesso de oferta; ajuste em direção a aproximadamente R$ 24,86 |
+| 2 | Demanda, preço R$ 20 para R$ 30 | elasticidade aproximadamente -0,63; receita de R$ 1.280 mil para R$ 1.320 mil |
+| 3 | Sua contribuição R$ 8 e outras quatro em R$ 8 | saldo individual R$ 24,80; grupo R$ 124 |
+| 3 | Sua contribuição zero e outras quatro em R$ 8 | saldo individual R$ 30,24; grupo R$ 119,20 |
+| 4 | Produção, 3 para 4 trabalhadores | total 24 para 32; marginal 10 para 8 |
+| 4 | Preço 10, CV unitário 4, CF 15.000 | equilíbrio em 2.500 unidades por mês |
 
-A regra é **não parar a apresentação para consertar**. Quem estiver falando segue com os
-prints enquanto outra pessoa tenta subir o lab de novo.
+Restaure os cenários ou recarregue a página antes do ensaio para retornar aos controles iniciais. O ajuste de mercado usa uma tolerância: o controle pode parar em R$ 25,0 enquanto a métrica mostra aproximadamente R$ 24,86.
 
----
+## Se a demonstração falhar
 
-## Valores de referência
+Continue com os prints; outra pessoa verifica o servidor. Se necessário, use `npm run build` e `npm run preview` para servir a versão de produção. A ausência das fontes online muda a tipografia, mas não os cálculos. Não pare a apresentação para reinstalar dependências.
 
-Os números que o roteiro manda apontar, conferidos **no navegador**, seguindo o roteiro passo a
-passo numa janela sem progresso salvo. Se a tela mostrar outra coisa, algum controle não está
-na posição inicial — use **Restaurar cenário**.
+## Material
 
-Os números aparecem como a tela os formata: arredondados, sem separador de milhar, e com hífen
-no lugar do sinal de menos. Aponte para a tela e leia o que estiver lá.
-
-Um detalhe do tema 4: o ajuste automático **para em R$ 25,0**, não em R$ 24,86. Ele para assim
-que a diferença entre as quantidades fica menor que meia mil unidade — perto o bastante para ser
-equilíbrio, mas sem cair exatamente no valor. O preço exato aparece na métrica de equilíbrio.
-
-| Tema | Situação | Valor esperado |
-|---|---|---|
-| 1 | Escolhendo a loja | custo de oportunidade R$ 380 · ganho líquido R$ 40 |
-| 1 | Escolhendo o aluguel | ganho líquido R$ -40 |
-| 2 | Preço R$ 9 | compra 4 un. · gasto R$ 36 · excedente R$ 18 |
-| 3 | Bem inferior, renda −20% | equilíbrio de R$ 24,86 para R$ 27,57 |
-| 4 | Preço R$ 34 | excesso de oferta de 34 mil un. |
-| 4 | Depois de "Deixar o mercado ajustar" | slider em R$ 25,0 · métrica de equilíbrio R$ 24,86 |
-| 5 | Preço de R$ 20 para R$ 30 | elasticidade -0,63 · receita de R$ 1280 para R$ 1320 mil |
-| 5 | Preço de R$ 25,5 para R$ 26,5 | elasticidade -0,96 · unitária · receita igual |
-| 5 | Oferta, R$ 20 → 30, condições de produção 0 / −15% / −30% | 0,74 inelástica · 1,00 unitária · 1,55 elástica |
-| 5 | Renda, bem inferior | elasticidade-renda -0,78 |
-| 6 | Muitos × muitos, produto idêntico → diferenciado | concorrência perfeita → monopolista |
+O [roteiro completo](roteiro.md) contém tempos, falas, demonstrações e cuidados de cada pessoa. O [PDF para compartilhar](material-quatro-pessoas.pdf) apresenta o mesmo conteúdo. Consulte também as [perguntas](perguntas.md).

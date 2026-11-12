@@ -1,94 +1,47 @@
-# Perguntas prováveis
+# Perguntas para os quatro apresentadores
 
-O que o professor tende a perguntar sobre o **conteúdo**, com a resposta curta e quem responde
-melhor. A regra é **responder o que é verdade, inclusive o que o laboratório não mostra** —
-diante de quem dá a disciplina, admitir um limite convence mais do que contorná-lo.
+## Pessoa 1
 
----
+**Por que uma escolha que rende dinheiro pode ser pior?** Porque a melhor alternativa viável pode render mais. Custo de oportunidade compara o que foi escolhido com o melhor uso abandonado.
 
-## Sobre a ementa
+**Por que não somar todas as alternativas abandonadas?** Porque elas são usos incompatíveis do mesmo recurso; não poderiam ser realizadas simultaneamente.
 
-### "O laboratório cobre o conteúdo da disciplina?"
-**Pessoa 1.** Cobre os seis temas até Estruturas de Mercado, na ordem das aulas. O que fica só
-no texto, sem laboratório, está no tema de elasticidades — ver a próxima pergunta.
+**Bem diferenciado e muitos participantes significam monopólio?** Não. No recorte do laboratório, muitos compradores e vendedores com diferenciação caracterizam concorrência monopolista.
 
-### "O que da aula de elasticidades não dá para manipular no laboratório?"
-**Pessoa 4.** As três medidas da aula — demanda, oferta e renda — estão no laboratório. Dois
-pontos estão no conceito, mas não são manipuláveis:
+## Pessoa 2
 
-- os **casos extremos**, demanda perfeitamente elástica e perfeitamente inelástica — a curva do
-  laboratório é uma reta inclinada, e não vira vertical nem horizontal;
-- os **fatores que afetam a elasticidade** — disponibilidade de substitutos, essencialidade, peso
-  no orçamento e horizonte de tempo.
+**Mudar o preço e deslocar a demanda são a mesma coisa?** Não. O preço do próprio bem move o ponto ao longo da curva; renda e preços de bens relacionados podem deslocar a curva.
 
----
+**Subir o preço sempre aumenta a receita?** Não. É preciso considerar a reação da quantidade. A elasticidade ajuda a interpretar esse efeito.
 
-## Sobre o modelo
+**Por que o controle não para exatamente em R$ 24,86?** O ajuste usa uma tolerância para encerrar a animação. A métrica apresenta o equilíbrio calculado, enquanto o controle pode indicar R$ 25,0.
 
-### "Por que a demanda é uma reta?"
-**Pessoa 4.** Simplificação didática. Ela tem uma consequência útil: numa reta a elasticidade
-**muda** de um ponto para outro — inelástica nos preços baixos, elástica nos altos. O
-laboratório mostra isso, e mostra a receita máxima no ponto de elasticidade unitária, em torno de
-R$ 26.
+**Os dados representam o mercado real de café?** Não. Os parâmetros das curvas são didáticos, sem calibração empírica.
 
-### "O preço de reserva é igual à utilidade marginal?"
-**Pessoa 2.** É a simplificação da própria aula: a utilidade é medida em reais. Com ela, o
-laboratório reproduz os dois exemplos trabalhados em aula.
+## Pessoa 3
 
-### "Por que o excedente do consumidor não aparece no equilíbrio de mercado?"
-**Pessoa 2.** Porque na ementa ele pertence à teoria do consumidor, e o laboratório segue a
-ementa: o excedente está no tema 2, calculado unidade a unidade.
+**Tudo que o governo oferece é bem público puro?** Não. A classificação depende de não rivalidade e não exclusividade.
 
-### "Por que o preço está no eixo vertical?"
-**Pessoa 3.** É a convenção da aula e dos livros-texto: o aluno vê no laboratório o mesmo desenho
-que vê no quadro.
+**Um subsídio elimina o risco do projeto?** Não. Ele altera o financiamento e o resultado privado esperado, mas não altera automaticamente a chance de sucesso.
 
-### "De onde vêm os números das curvas?"
-**Pessoa 3.** Foram escolhidos para os efeitos ficarem legíveis no gráfico, não calibrados com
-dados de um mercado real. O que o laboratório ensina é a **direção** de cada efeito, e essa vem da
-teoria.
+**As alíquotas simuladas são as da legislação?** Não. As faixas são hipotéticas e servem para comparar peso relativo e incentivos. A síntese da reforma aponta para uma fonte oficial, sem transformar o simulador em calculador fiscal.
 
----
+**A curva de Laffer diz qual alíquota usar?** Não. O formato depende da reação da base tributável. A ilustração não identifica um ponto ótimo universal ou a situação de uma economia real.
 
-## Sobre o comportamento das curvas
+## Pessoa 4
 
-### "O bem inferior não é aquele cuja demanda sobe quando o preço sobe?"
-**Pessoa 3.** Não — esse é o **bem de Giffen**, um caso extremo de bem inferior. Bem inferior é
-aquele cuja demanda cai quando a **renda** sobe, e é isso que o laboratório mostra. Giffen não
-aparece: no modelo, a demanda sempre desce com o preço.
+**Marginal decrescente significa queda do total?** Não. Enquanto a marginal é positiva, o total cresce; se ela for menor, cresce mais lentamente. Marginal negativa reduz o total.
 
-### "O laboratório separa efeito renda e efeito substituição?"
-**Pessoa 3.** Não decompõe. O conceito nomeia os dois, como a aula: são as razões para a
-quantidade demandada responder ao preço. No laboratório eles agem juntos quando o preço do
-produto muda, e o que aparece é o efeito **total**.
+**Ponto de equilíbrio da firma é o equilíbrio de mercado?** Não. Na firma, receita total iguala custo total. No mercado, quantidade demandada iguala ofertada.
 
-### "E se oferta e demanda se deslocarem ao mesmo tempo?"
-**Pessoa 3.** O tema 4 permite os dois choques juntos. Com as duas curvas indo para a direita, a
-**quantidade sobe com certeza**, e o **preço depende de qual choque é maior** — sobe se a demanda
-domina, cai se a oferta domina.
+**Lucratividade e rentabilidade têm a mesma base?** Não. Lucratividade usa a receita; rentabilidade usa o investimento. Os períodos devem ser consistentes.
 
-### "O ajuste sempre chega ao equilíbrio?"
-**Pessoa 3.** No modelo, sim. O preço sobe quando falta produto e cai quando sobra — essa direção
-vem da teoria. A **velocidade** do ajuste é só uma escolha para a animação ser legível; a teoria
-não diz o ritmo.
+**O prazo simples é uma previsão financeira completa?** Não. Ele supõe lucro positivo e constante, sem desconto temporal e sem uma projeção detalhada de caixa.
 
-### "O monopolista escolhe o preço? Aparece receita marginal igual a custo marginal?"
-**Pessoa 4.** Não. A aula trata as estruturas pelas **características** — quantos agentes de cada
-lado, barreiras, diferenciação —, e o laboratório segue isso: classifica o mercado, não calcula a
-escolha ótima da empresa.
+**A planilha é outro módulo?** Não. Ela complementa a aula 12, no tema 10, com tabelas e exercícios de custos e receitas.
 
----
+## Todos
 
-## Sobre o aprendizado
+**Por que o formato mudou?** Para registrar uma hipótese antes da manipulação e conectar a explicação ao resultado observado, mantendo exploração livre.
 
-### "O aluno não pode simplesmente decorar as respostas?"
-**Pessoa 4.** Nos temas 1, 2, 3, 5 e 6, cada rodada do desafio é sorteada — mercados, preços e
-quantidades mudam toda vez. No tema 4, as metas são conferidas no estado que o aluno produziu nos
-controles. Nos dois casos não há gabarito fixo.
-
----
-
-## Se a pergunta não estiver aqui
-
-Diga que não sabe e que vai verificar. Uma resposta inventada sobre economia, diante de quem dá a
-disciplina, custa mais do que um "boa pergunta, vou conferir".
+**Como o progresso funciona?** É salvo no navegador. A previsão conta pela tentativa, experimentar exige interação e aplicar exige resolver os casos. Entender é registrado quando o aluno confirma a leitura e segue para a aplicação. O sistema não certifica aprendizagem nem bloqueia etapas.
