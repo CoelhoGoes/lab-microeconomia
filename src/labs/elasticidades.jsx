@@ -220,14 +220,14 @@ export default function LabElasticidades({ abrirDesafio = 0 }) {
           responde <b>menos</b>, é <b>inelástica</b>. Respondendo na mesma proporção, é unitária.
         </p>
         <p>
-          A consequência prática é a receita. Com demanda elástica, baixar o preço <b>aumenta</b>
+          A consequência prática é a receita. Com demanda elástica, baixar o preço <b>aumenta</b>{' '}
           a receita, porque o ganho em quantidade supera a perda por unidade. Com demanda
           inelástica acontece o contrário. É por isso que a mesma promoção funciona num produto e
           quebra outro.
         </p>
         <p>
           Há dois <b>casos extremos</b>. Na demanda <b>perfeitamente inelástica</b> (E = 0), a
-          quantidade não muda com o preço: a curva é vertical. Na <b>perfeitamente elástica</b>
+          quantidade não muda com o preço: a curva é vertical. Na <b>perfeitamente elástica</b>{' '}
           (E = ∞), a curva é horizontal num preço P1 — acima dele a quantidade demandada é zero,
           nele assume qualquer valor, abaixo dele seria infinita.
         </p>
