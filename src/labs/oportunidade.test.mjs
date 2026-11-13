@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { custoOportunidade, avaliar, gerarCaso, gerarRodada, RECURSOS } from './oportunidade.js'
+import { custoOportunidade, avaliar, gerarCaso, gerarRodada, diagnosticar, RECURSOS } from './oportunidade.js'
 
 function rngSemente(semente) {
   let estado = semente
@@ -76,4 +76,14 @@ test('todos os usos de um caso disputam o mesmo recurso', () => {
     const recurso = RECURSOS.find(r => r.id === caso.recurso.id)
     for (const a of caso.alternativas) assert.ok(recurso.usos.includes(a.uso), `${a.uso} não é uso de ${recurso.id}`)
   }
+})
+
+test('o diagnóstico nomeia cada erro comum', () => {
+  const caso = { alternativas: OPCOES, escolhidaId: 'a' }  // a=200; sobram b=120 e c=300
+  assert.equal(diagnosticar(caso, 300), 'certo')
+  assert.equal(diagnosticar(caso, 420), 'somou')
+  assert.equal(diagnosticar(caso, 200), 'escolhida')
+  assert.equal(diagnosticar(caso, -100), 'ganho')
+  assert.equal(diagnosticar(caso, 120), 'nao-melhor')
+  assert.equal(diagnosticar(caso, 7), 'outro')
 })

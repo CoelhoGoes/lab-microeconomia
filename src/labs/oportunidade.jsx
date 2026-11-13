@@ -4,7 +4,8 @@ import { usePersistido } from '../shared/persistencia.js'
 import SecoesDoModulo from '../shared/SecoesDoModulo.jsx'
 import Previsao, { Reflexao } from '../shared/Previsao.jsx'
 import { criarSecoes, PassoEntender } from '../shared/Jornada.jsx'
-import { avaliar, custoOportunidade, gerarRodada } from './oportunidade.js'
+import { avaliar, custoOportunidade, diagnosticar, gerarRodada } from './oportunidade.js'
+import { lerNumero, respostaNumerica } from './firma.js'
 
 const VALOR_MAX = 600
 
@@ -67,14 +68,12 @@ export default function LabOportunidade({ abrirDesafio = 0 }) {
   const [rodadas, setRodadas] = usePersistido('microlab:oportunidade:rodadas', 0)
   const [rodada, setRodada] = useState(() => gerarRodada())
   const [respostas, setRespostas] = useState({})
+  const [conferidas, setConferidas] = useState({})
 
   const r = avaliar(alternativas, escolhidaId)
 
-  const acertos = rodada.filter(caso => {
-    const certo = custoOportunidade(caso.alternativas, caso.escolhidaId)
-    const dada = respostas[caso.id]
-    return dada !== undefined && dada !== '' && Number(dada) === certo
-  }).length
+  const acertos = rodada.filter(caso =>
+    respostaNumerica(conferidas[caso.id], custoOportunidade(caso.alternativas, caso.escolhidaId), 0)).length
   const rodadaCompleta = acertos === rodada.length
 
   useEffect(() => {
@@ -84,6 +83,7 @@ export default function LabOportunidade({ abrirDesafio = 0 }) {
   const novaRodada = () => {
     setRodada(gerarRodada())
     setRespostas({})
+    setConferidas({})
   }
 
   const ajustar = (id, valor) => {
@@ -247,6 +247,7 @@ export default function LabOportunidade({ abrirDesafio = 0 }) {
       {secao === 'laboratorio' && <PassoEntender onClick={() => irPara('conceito')} />}
       {secao === 'desafio' && (
         <Desafio rodada={rodada} respostas={respostas} setRespostas={setRespostas}
+                 conferidas={conferidas} setConferidas={setConferidas}
                  acertos={acertos} rodadas={rodadas} completa={rodadaCompleta} onNovaRodada={novaRodada} />
       )}
 
@@ -265,7 +266,27 @@ export default function LabOportunidade({ abrirDesafio = 0 }) {
   )
 }
 
-function Desafio({ rodada, respostas, setRespostas, acertos, rodadas, completa, onNovaRodada }) {
+// O raciocínio completo de um caso. Aparece no erro, para corrigir o caminho, e
+// no acerto, para o aluno confirmar que acertou pelo motivo certo.
+function raciocinio(caso) {
+  const escolhida = caso.alternativas.find(a => a.id === caso.escolhidaId)
+  const abandonadas = caso.alternativas.filter(a => a.id !== caso.escolhidaId)
+  const melhor = abandonadas.reduce((m, a) => (a.valor > m.valor ? a : m))
+  return `O recurso só pode ir para um uso. Escolhendo ${escolhida.uso}, ficam de fora: ` +
+    `${abandonadas.map(a => `${a.uso} (R$ ${a.valor})`).join(', ')}. ` +
+    `Como só uma delas poderia acontecer no lugar da escolhida, o que se perde é a melhor: ` +
+    `${melhor.uso}, R$ ${melhor.valor}.`
+}
+
+const ERROS = {
+  somou: 'Você somou as alternativas abandonadas, mas elas não aconteceriam juntas.',
+  escolhida: 'Esse é o retorno da opção escolhida: o que se ganha, não o que se perde.',
+  ganho: 'Esse é o ganho líquido (escolhida menos a melhor abandonada), não o custo.',
+  'nao-melhor': 'Essa alternativa ficou de fora, mas não é a melhor delas.',
+  outro: 'Esse valor não corresponde a nenhuma das alternativas.',
+}
+
+function Desafio({ rodada, respostas, setRespostas, conferidas, setConferidas, acertos, rodadas, completa, onNovaRodada }) {
   return (
     <div className="metas">
       <div className="metas-topo">
@@ -278,35 +299,41 @@ function Desafio({ rodada, respostas, setRespostas, acertos, rodadas, completa, 
       <p className="metas-intro">
         Os cenários são sorteados a cada rodada. Dada a alternativa escolhida, diga qual foi o
         custo de oportunidade — lembrando que ele é o valor da melhor abandonada, não a soma
-        delas.
+        delas. Escreva os valores e clique em <b>Conferir</b>.
       </p>
       <ul className="casos">
         {rodada.map(caso => {
-          const certo = custoOportunidade(caso.alternativas, caso.escolhidaId)
           const escolhida = caso.alternativas.find(a => a.id === caso.escolhidaId)
           const resposta = respostas[caso.id]
-          const respondeu = resposta !== undefined && resposta !== ''
-          const acertou = respondeu && Number(resposta) === certo
+          const conferida = conferidas[caso.id] !== undefined
+          const numero = lerNumero(conferidas[caso.id])
+          const diagnostico = numero === null ? null : diagnosticar(caso, numero)
+          const acertou = diagnostico === 'certo'
           return (
-            <li key={caso.id} className={respondeu ? (acertou ? 'caso certo' : 'caso errado') : 'caso'}>
+            <li key={caso.id} className={conferida ? (acertou ? 'caso certo' : 'caso errado') : 'caso'}>
               <p>
-                Opções: {caso.alternativas.map(a => `${a.uso} (R$ ${a.valor})`).join('; ')}.
+                Recurso: {caso.recurso.descricao}. Opções:{' '}
+                {caso.alternativas.map(a => `${a.uso} (R$ ${a.valor})`).join('; ')}.
                 {' '}Escolheu <b>{escolhida.uso}</b>.
               </p>
               <div className="caso-opcoes">
                 <label className="caso-numero">
                   Custo de oportunidade R$
                   <input
-                    type="number" value={resposta ?? ''} disabled={acertou}
-                    onChange={ev => setRespostas(x => ({ ...x, [caso.id]: ev.target.value }))}
+                    inputMode="decimal" value={resposta ?? ''} disabled={acertou}
+                    onChange={ev => {
+                      setRespostas(x => ({ ...x, [caso.id]: ev.target.value }))
+                      // Mudou a resposta: o retorno anterior não vale mais para ela.
+                      setConferidas(({ [caso.id]: _, ...resto }) => resto)
+                    }}
                   />
                 </label>
               </div>
-              {respondeu && (
+              {conferida && (
                 <p className="caso-feedback">
-                  {acertou
-                    ? `✓ A melhor abandonada rendia R$ ${certo}.`
-                    : '✗ Olhe só as alternativas que ficaram de fora e pegue a de maior valor.'}
+                  {acertou ? '✓ Isso. ' : '✗ Ainda não. '}
+                  {diagnostico === null ? 'Escreva só o valor em reais, por exemplo 380. ' : !acertou && `${ERROS[diagnostico]} `}
+                  {raciocinio(caso)}
                 </p>
               )}
             </li>
@@ -316,7 +343,10 @@ function Desafio({ rodada, respostas, setRespostas, acertos, rodadas, completa, 
       {completa && (
         <p className="metas-fim">✦ Rodada fechada. Sorteie outra para treinar com cenários novos.</p>
       )}
-      <button className="reset ajustar" onClick={onNovaRodada}>↻ Sortear nova rodada</button>
+      <div className="jornada-acoes">
+        <button className="button primary" onClick={() => setConferidas({ ...respostas })}>Conferir respostas →</button>
+        <button className="reset ajustar" onClick={onNovaRodada}>↻ Sortear nova rodada</button>
+      </div>
     </div>
   )
 }

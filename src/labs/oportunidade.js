@@ -104,3 +104,16 @@ export function gerarRodada(rng = Math.random, quantos = 3) {
   return Array.from({ length: quantos }, (_, i) => gerarCaso(rng, recursos[i % recursos.length]))
 }
 
+// Lê a resposta do aluno para um caso e diz qual raciocínio ela revela. Cada
+// erro comum tem nome, para o feedback corrigir o raciocínio, não só o número.
+export function diagnosticar(caso, valorDado) {
+  const certo = custoOportunidade(caso.alternativas, caso.escolhidaId)
+  if (valorDado === certo) return 'certo'
+  const escolhida = caso.alternativas.find(a => a.id === caso.escolhidaId)
+  const abandonadas = caso.alternativas.filter(a => a.id !== caso.escolhidaId)
+  if (valorDado === abandonadas.reduce((s, a) => s + a.valor, 0)) return 'somou'
+  if (valorDado === escolhida.valor) return 'escolhida'
+  if (valorDado === escolhida.valor - certo) return 'ganho'
+  if (abandonadas.some(a => a.valor === valorDado)) return 'nao-melhor'
+  return 'outro'
+}

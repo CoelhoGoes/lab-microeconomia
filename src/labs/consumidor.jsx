@@ -8,6 +8,7 @@ import { criarSecoes, PassoEntender } from '../shared/Jornada.jsx'
 import {
   equilibrioConsumidor, respeitaDecrescente, gerarRodada,
 } from './utilidade.js'
+import { lerNumero, respostaNumerica } from './firma.js'
 
 const UTILIDADES_PADRAO = [18, 15, 12, 9, 6, 3]
 const PRECO_INICIAL = 9
@@ -30,14 +31,13 @@ export default function LabConsumidor({ abrirDesafio = 0 }) {
   const [rodadas, setRodadas] = usePersistido('microlab:consumidor:rodadas', 0)
   const [rodada, setRodada] = useState(() => gerarRodada())
   const [respostas, setRespostas] = useState({})
+  const [conferidas, setConferidas] = useState({})
 
   const e = equilibrioConsumidor(utilidades, precoMercado)
   const decrescente = respeitaDecrescente(utilidades)
 
-  const acertos = rodada.filter(caso => {
-    const certo = equilibrioConsumidor(caso.utilidades, caso.precoMercado).excedente
-    return respostas[caso.id] !== undefined && Number(respostas[caso.id]) === certo
-  }).length
+  const acertos = rodada.filter(caso =>
+    respostaNumerica(conferidas[caso.id], equilibrioConsumidor(caso.utilidades, caso.precoMercado).excedente, 0)).length
   const rodadaCompleta = acertos === rodada.length
 
   useEffect(() => {
@@ -47,6 +47,7 @@ export default function LabConsumidor({ abrirDesafio = 0 }) {
   const novaRodada = () => {
     setRodada(gerarRodada())
     setRespostas({})
+    setConferidas({})
   }
 
   const editar = (i, valor) => {
@@ -206,6 +207,7 @@ export default function LabConsumidor({ abrirDesafio = 0 }) {
       {secao === 'laboratorio' && <PassoEntender onClick={() => irPara('conceito')} />}
       {secao === 'desafio' && (
         <Desafio rodada={rodada} respostas={respostas} setRespostas={setRespostas}
+                 conferidas={conferidas} setConferidas={setConferidas}
                  acertos={acertos} rodadas={rodadas} completa={rodadaCompleta} onNovaRodada={novaRodada} />
       )}
 
@@ -223,7 +225,22 @@ export default function LabConsumidor({ abrirDesafio = 0 }) {
   )
 }
 
-function Desafio({ rodada, respostas, setRespostas, acertos, rodadas, completa, onNovaRodada }) {
+// O cálculo completo de um caso, mostrado no erro e reforçado no acerto.
+function raciocinio(caso, certo) {
+  const p = caso.precoMercado
+  const compradas = certo.linhas.filter(l => l.precoReserva >= p)
+  const fora = certo.linhas.filter(l => l.precoReserva < p)
+  if (compradas.length === 0) {
+    return `Nenhuma reserva cobre o preço de R$ ${p}: ele não compra nada e o excedente é R$ 0.`
+  }
+  return `Ele compra enquanto a reserva cobre o preço de R$ ${p}: ${compradas.length} un. ` +
+    `(reservas de R$ ${compradas.map(l => l.precoReserva).join(', ')})` +
+    `${fora.length ? `; as de R$ ${fora.map(l => l.precoReserva).join(', ')} ficam de fora` : ''}. ` +
+    `Em cada unidade comprada, o excedente é a reserva menos o preço: ` +
+    `${compradas.map(l => `(${l.precoReserva} − ${p})`).join(' + ')} = R$ ${certo.excedente}.`
+}
+
+function Desafio({ rodada, respostas, setRespostas, conferidas, setConferidas, acertos, rodadas, completa, onNovaRodada }) {
   return (
     <div className="metas">
       <div className="metas-topo">
@@ -236,15 +253,17 @@ function Desafio({ rodada, respostas, setRespostas, acertos, rodadas, completa, 
       <p className="metas-intro">
         As tabelas são sorteadas a cada rodada. Descubra quantas unidades o consumidor compra e
         calcule o excedente — a soma, nas unidades compradas, do que ele deixou de pagar.
+        Escreva os valores e clique em <b>Conferir</b>.
       </p>
       <ul className="casos">
         {rodada.map(caso => {
           const certo = equilibrioConsumidor(caso.utilidades, caso.precoMercado)
           const resposta = respostas[caso.id]
-          const respondeu = resposta !== undefined && resposta !== ''
-          const acertou = respondeu && Number(resposta) === certo.excedente
+          const conferida = conferidas[caso.id] !== undefined
+          const numero = lerNumero(conferidas[caso.id])
+          const acertou = numero === certo.excedente
           return (
-            <li key={caso.id} className={respondeu ? (acertou ? 'caso certo' : 'caso errado') : 'caso'}>
+            <li key={caso.id} className={conferida ? (acertou ? 'caso certo' : 'caso errado') : 'caso'}>
               <p>
                 Reservas de R$ {caso.utilidades.join(', ')} por unidade. Preço de mercado:
                 {' '}R$ {caso.precoMercado}.
@@ -253,16 +272,20 @@ function Desafio({ rodada, respostas, setRespostas, acertos, rodadas, completa, 
                 <label className="caso-numero">
                   Excedente R$
                   <input
-                    type="number" value={resposta ?? ''} disabled={acertou}
-                    onChange={ev => setRespostas(r => ({ ...r, [caso.id]: ev.target.value }))}
+                    inputMode="decimal" value={resposta ?? ''} disabled={acertou}
+                    onChange={ev => {
+                      setRespostas(r => ({ ...r, [caso.id]: ev.target.value }))
+                      setConferidas(({ [caso.id]: _, ...resto }) => resto)
+                    }}
                   />
                 </label>
               </div>
-              {respondeu && (
+              {conferida && (
                 <p className="caso-feedback">
-                  {acertou
-                    ? `✓ Compra ${certo.quantidade} un. e o excedente é R$ ${certo.excedente}.`
-                    : `✗ Some, só nas unidades cuja reserva cobre R$ ${caso.precoMercado}, quanto cada uma deixou de pagar.`}
+                  {acertou ? '✓ Isso. ' : '✗ Ainda não. '}
+                  {numero === null && 'Escreva só o valor em reais, por exemplo 18. '}
+                  {numero !== null && !acertou && numero === certo.gasto && 'Esse é o gasto com as unidades, não o que ele deixou de pagar. '}
+                  {raciocinio(caso, certo)}
                 </p>
               )}
             </li>
@@ -272,7 +295,10 @@ function Desafio({ rodada, respostas, setRespostas, acertos, rodadas, completa, 
       {completa && (
         <p className="metas-fim">✦ Rodada fechada. Sorteie outra para treinar com tabelas novas.</p>
       )}
-      <button className="reset ajustar" onClick={onNovaRodada}>↻ Sortear nova rodada</button>
+      <div className="jornada-acoes">
+        <button className="button primary" onClick={() => setConferidas({ ...respostas })}>Conferir respostas →</button>
+        <button className="reset ajustar" onClick={onNovaRodada}>↻ Sortear nova rodada</button>
+      </div>
     </div>
   )
 }
