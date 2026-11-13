@@ -224,6 +224,24 @@ export default function LabEstruturas({ abrirDesafio = 0 }) {
   )
 }
 
+// O caminho da classificação, mostrado no erro e reforçado no acerto: primeiro
+// a contagem de cada lado, depois (só se ela empatar) o produto.
+const PREFIXO = { um: 'mono', dois: 'duo', poucos: 'oligo' }
+const CONTAGEM = { um: 'apenas um', dois: 'apenas dois', poucos: 'poucos' }
+
+function porQue({ vendedores, compradores, diferenciado }, estrutura) {
+  const nome = ESTRUTURAS[estrutura].nome.toLowerCase()
+  if (vendedores === 'muitos' && compradores === 'muitos') {
+    return `Há muitos dos dois lados, então a contagem não decide: decide o produto. ` +
+      `Produto ${diferenciado ? 'diferenciado' : 'homogêneo'} → ${nome}.`
+  }
+  const [lado, conta, sufixo] = vendedores === 'muitos'
+    ? ['COMPRA', compradores, 'psônio']
+    : ['VENDA', vendedores, 'pólio']
+  return `Só um lado está concentrado: há ${CONTAGEM[conta]} ${lado === 'COMPRA' ? 'comprador' : 'vendedor'}${conta === 'um' ? '' : 'es'}. ` +
+    `O poder fica no lado da ${lado.toLowerCase()} (-${sufixo}) e a contagem dá o prefixo (${PREFIXO[conta]}-) → ${nome}.`
+}
+
 function Desafio({ rodada, respostas, setRespostas, acertos, rodadas, completa, onNovaRodada }) {
   return (
     <div className="metas">
@@ -259,9 +277,9 @@ function Desafio({ rodada, respostas, setRespostas, acertos, rodadas, completa, 
               </div>
               {escolha && (
                 <p className="caso-feedback">
-                  {acertou
-                    ? `✓ ${ESTRUTURAS[caso.estrutura].nome}: ${ESTRUTURAS[caso.estrutura].poder}`
-                    : '✗ Conte quantos há de cada lado antes de olhar a entrada — é a contagem que decide primeiro.'}
+                  {acertou ? '✓ Isso. ' : `✗ Não é ${ESTRUTURAS[escolha].nome.toLowerCase()}. `}
+                  {porQue(caso.determinantes, caso.estrutura)}
+                  {' '}Poder de mercado: {ESTRUTURAS[caso.estrutura].poder}
                 </p>
               )}
             </li>

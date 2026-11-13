@@ -286,7 +286,9 @@ function Desafio({ rodada, respostas, setRespostas, acertos, rodadas, completa, 
                   A demanda por {caso.par.b} {certo.varDemanda > 0 ? 'subiu' : 'caiu'}{' '}
                   {Math.abs(certo.varDemanda)}% — {certo.varPreco > 0 ? 'com o preço em alta' : 'com o preço em baixa'},
                   os dois se moveram {Math.sign(certo.varPreco) === Math.sign(certo.varDemanda) ? 'no mesmo sentido' : 'em sentidos opostos'}.
-                  {!acertou && ' Mesmo sentido é substituto; sentidos opostos, complementar.'}
+                  {' '}Mesmo sentido indica substitutos (um toma o lugar do outro); sentidos opostos
+                  indicam complementares (são consumidos juntos).
+                  {acertou ? ` Por isso são ${ROTULO_RELACAO[certo.relacao].toLowerCase()}.` : ' Releia a direção dos dois movimentos e tente de novo.'}
                 </p>
               )}
             </li>

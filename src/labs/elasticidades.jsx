@@ -54,6 +54,15 @@ const MEDIDAS = [
 
 // A medida de renda tem uma classe a mais: só nela o sinal negativo é resposta.
 const OPCOES_PRECO = ['elastica', 'unitaria', 'inelastica']
+
+// A regra de leitura de cada classe, para o feedback do Aplicar explicar o
+// porquê da resposta — no erro e também no acerto.
+const REGRA = {
+  elastica: 'Sem o sinal, o valor é maior que 1: a quantidade variou mais que a base',
+  unitaria: 'Sem o sinal, o valor é igual a 1: as duas variaram na mesma proporção',
+  inelastica: 'Sem o sinal, o valor é menor que 1: a quantidade variou menos que a base',
+  inferior: 'O sinal é negativo: a renda e a quantidade andaram em sentidos opostos',
+}
 const OPCOES_RENDA = ['elastica', 'unitaria', 'inelastica', 'inferior']
 
 // Percentual que ocupa a metade da barra. Escala fixa: com escala automática,
@@ -412,6 +421,7 @@ function Desafio({ rodada, respostas, setRespostas, acertos, rodadas, completa, 
                   {acertou ? '✓ ' : '✗ '}
                   {deRenda ? 'Renda' : 'Preço'} {num(certo.varBase * 100, 0)}%, quantidade{' '}
                   {num(certo.varQuantidade * 100, 0)}% → elasticidade {num(certo.valor, 2)}.
+                  {' '}{REGRA[certo.tipo]} → {rotulos[certo.tipo].rotulo.toLowerCase()}.
                   {!acertou && (deRenda
                     ? ' Veja primeiro o sinal: sentidos opostos é bem inferior. Só depois compare os tamanhos.'
                     : ' Compare o tamanho das duas variações e tente de novo.')}
