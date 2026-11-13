@@ -32,16 +32,43 @@ export function avaliar(alternativas, escolhidaId) {
 
 // --- Gerador do desafio -------------------------------------------------
 // Sem banco de perguntas: cada rodada sorteia usos e valores novos.
+//
+// Todos os usos de um caso disputam o MESMO recurso. Misturar recursos
+// (poupança × aluguel do terreno × trabalho no sábado) quebraria o conceito:
+// aplicar dinheiro não impede alugar o terreno, então essas opções não seriam
+// alternativas uma da outra, e o gabarito contradiria o raciocínio correto.
 
-const USOS = [
-  'trabalhar como freelancer no sábado',
-  'alugar o terreno para um vizinho',
-  'fazer um curso de extensão',
-  'abrir uma barraca na feira',
-  'aplicar o dinheiro na poupança',
-  'revender mercadoria no fim de semana',
-  'dar aulas particulares',
-  'arrendar a área para plantio',
+export const RECURSOS = [
+  {
+    id: 'terreno',
+    descricao: 'um terreno livre — cada uso rende por mês',
+    usos: [
+      'alugar o terreno para um vizinho',
+      'arrendar a área para plantio',
+      'abrir uma barraca no terreno',
+      'usar o terreno como estacionamento pago',
+    ],
+  },
+  {
+    id: 'sabado',
+    descricao: 'um sábado livre — cada uso rende no dia',
+    usos: [
+      'trabalhar como freelancer',
+      'dar aulas particulares',
+      'revender mercadoria na feira',
+      'fazer um bico como garçom',
+    ],
+  },
+  {
+    id: 'dinheiro',
+    descricao: 'uma reserva de dinheiro — cada uso rende por mês',
+    usos: [
+      'aplicar na poupança',
+      'comprar um título público',
+      'comprar estoque para revender',
+      'emprestar a juros para um parente',
+    ],
+  },
 ]
 
 const VALORES = [80, 120, 150, 200, 240, 300, 360, 420, 500]
@@ -57,9 +84,9 @@ function sortearDistintos(lista, quantos, rng) {
   })
 }
 
-export function gerarCaso(rng = Math.random) {
+export function gerarCaso(rng = Math.random, recurso = sortear(RECURSOS, rng)) {
   const quantas = 3 + Math.floor(rng() * 2) // 3 ou 4 alternativas
-  const usos = sortearDistintos(USOS, quantas, rng)
+  const usos = sortearDistintos(recurso.usos, quantas, rng)
   // Valores distintos: com empate no topo, "a melhor abandonada" teria duas
   // respostas igualmente defensáveis e o exercício ficaria ambíguo.
   const valores = sortearDistintos(VALORES, quantas, rng)
@@ -67,9 +94,13 @@ export function gerarCaso(rng = Math.random) {
   const alternativas = usos.map((uso, i) => ({ id: `alt-${i}`, uso, valor: valores[i] }))
   const escolhida = sortear(alternativas, rng)
 
-  return { id: `${valores.join('-')}-${escolhida.id}`, alternativas, escolhidaId: escolhida.id }
+  return { id: `${recurso.id}-${valores.join('-')}-${escolhida.id}`, recurso, alternativas, escolhidaId: escolhida.id }
 }
 
+// Uma rodada passa por recursos diferentes (terreno, sábado, dinheiro), para o
+// aluno ver o mesmo raciocínio valer em contextos distintos.
 export function gerarRodada(rng = Math.random, quantos = 3) {
-  return Array.from({ length: quantos }, () => gerarCaso(rng))
+  const recursos = sortearDistintos(RECURSOS, Math.min(quantos, RECURSOS.length), rng)
+  return Array.from({ length: quantos }, (_, i) => gerarCaso(rng, recursos[i % recursos.length]))
 }
+

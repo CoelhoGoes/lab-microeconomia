@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { custoOportunidade, avaliar, gerarCaso, gerarRodada } from './oportunidade.js'
+import { custoOportunidade, avaliar, gerarCaso, gerarRodada, RECURSOS } from './oportunidade.js'
 
 function rngSemente(semente) {
   let estado = semente
@@ -66,4 +66,14 @@ test('todo caso gerado é resolvível e sem ambiguidade', () => {
 
 test('uma rodada traz três casos', () => {
   assert.equal(gerarRodada().length, 3)
+  const recursos = gerarRodada(rngSemente(7)).map(c => c.recurso.id)
+  assert.equal(new Set(recursos).size, 3, 'a rodada deve variar o recurso')
+})
+
+test('todos os usos de um caso disputam o mesmo recurso', () => {
+  for (let i = 0; i < 600; i++) {
+    const caso = gerarCaso(rngSemente(i + 1))
+    const recurso = RECURSOS.find(r => r.id === caso.recurso.id)
+    for (const a of caso.alternativas) assert.ok(recurso.usos.includes(a.uso), `${a.uso} não é uso de ${recurso.id}`)
+  }
 })
