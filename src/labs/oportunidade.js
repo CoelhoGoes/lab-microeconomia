@@ -117,3 +117,39 @@ export function diagnosticar(caso, valorDado) {
   if (abandonadas.some(a => a.valor === valorDado)) return 'nao-melhor'
   return 'outro'
 }
+
+// --- Missões do laboratório --------------------------------------------
+// Predicados sobre o estado que o aluno produziu, no mesmo padrão das metas do
+// tema 4: o laboratório diz o que fazer e reconhece quando foi feito.
+
+// Os dois produtores da fronteira de possibilidades de produção. Cada um gasta
+// todos os recursos num bem ou noutro; a fronteira é a reta entre os máximos.
+export const PRODUTORES = [
+  { nome: 'Ana', cafeMax: 60, cacauMax: 120, cor: 'a' },
+  { nome: 'Bruno', cafeMax: 40, cacauMax: 40, cor: 'b' },
+]
+
+// Quantas sacas de cacau deixam de ser produzidas para produzir 1 de café: o
+// custo de oportunidade medido em unidades do outro bem.
+export const custoCafeEmCacau = p => p.cacauMax / p.cafeMax
+
+// A melhor alternativa que Ana abandona ao escolher a loja, com os valores atuais.
+export function melhorAbandonadaDaLoja(alternativas) {
+  return alternativas
+    .filter(a => a.id !== 'loja')
+    .reduce((m, a) => (a.valor > m.valor ? a : m))
+}
+
+// `estado`: { alternativas, escolhidaId, sacrificio, custosFpp }
+//   sacrificio — id da alternativa que o aluno apontou como sacrificada (missão 2)
+//   custosFpp  — { [nome]: custo respondido } na fronteira (missão 4)
+export function missoesCumpridas({ alternativas, escolhidaId, sacrificio, custosFpp = {} }) {
+  const feitas = []
+  const r = avaliar(alternativas, escolhidaId)
+  if (r?.ehMelhor) feitas.push('escolher')
+  if (sacrificio === melhorAbandonadaDaLoja(alternativas).id) feitas.push('sacrificio')
+  // A loja deixa de valer a pena quando a melhor abandonada rende pelo menos o mesmo.
+  if (avaliar(alternativas, 'loja').ganhoLiquido <= 0) feitas.push('empate')
+  if (PRODUTORES.every(p => custosFpp[p.nome] === custoCafeEmCacau(p))) feitas.push('fronteira')
+  return feitas
+}

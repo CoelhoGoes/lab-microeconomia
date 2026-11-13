@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { custoOportunidade, avaliar, gerarCaso, gerarRodada, diagnosticar, RECURSOS } from './oportunidade.js'
+import { custoOportunidade, avaliar, gerarCaso, gerarRodada, diagnosticar, RECURSOS, missoesCumpridas, PRODUTORES, custoCafeEmCacau } from './oportunidade.js'
 
 function rngSemente(semente) {
   let estado = semente
@@ -86,4 +86,27 @@ test('o diagnóstico nomeia cada erro comum', () => {
   assert.equal(diagnosticar(caso, -100), 'ganho')
   assert.equal(diagnosticar(caso, 120), 'nao-melhor')
   assert.equal(diagnosticar(caso, 7), 'outro')
+})
+
+test('missões: cada uma reconhece só o estado que pede', () => {
+  const base = [
+    { id: 'loja', uso: 'loja', valor: 420 },
+    { id: 'aluguel', uso: 'aluguel', valor: 380 },
+    { id: 'horta', uso: 'horta', valor: 240 },
+  ]
+  assert.deepEqual(missoesCumpridas({ alternativas: base, escolhidaId: null }), [])
+  assert.deepEqual(missoesCumpridas({ alternativas: base, escolhidaId: 'aluguel' }), [])
+  assert.deepEqual(missoesCumpridas({ alternativas: base, escolhidaId: 'loja' }), ['escolher'])
+  assert.deepEqual(missoesCumpridas({ alternativas: base, escolhidaId: null, sacrificio: 'horta' }), [])
+  assert.deepEqual(missoesCumpridas({ alternativas: base, escolhidaId: null, sacrificio: 'aluguel' }), ['sacrificio'])
+
+  const empate = base.map(a => (a.id === 'aluguel' ? { ...a, valor: 420 } : a))
+  assert.ok(missoesCumpridas({ alternativas: empate, escolhidaId: null }).includes('empate'))
+
+  assert.deepEqual(missoesCumpridas({ alternativas: base, escolhidaId: null, custosFpp: { Ana: 2, Bruno: 1 } }), ['fronteira'])
+  assert.deepEqual(missoesCumpridas({ alternativas: base, escolhidaId: null, custosFpp: { Ana: 0.5, Bruno: 1 } }), [])
+})
+
+test('custo do café em cacau: 2 para Ana, 1 para Bruno', () => {
+  assert.deepEqual(PRODUTORES.map(custoCafeEmCacau), [2, 1])
 })
