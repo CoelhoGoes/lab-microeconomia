@@ -3,9 +3,33 @@ import Jornada, { Metricas, GraficoLinhas } from '../shared/Jornada.jsx'
 import Slider from '../shared/Slider.jsx'
 import { num } from '../shared/formato.js'
 import { resultadoFirma } from './firma.js'
+import { missoesCustos } from './missoes.js'
 import TabelaDeCustos from '../shared/TabelaDeCustos.jsx'
 
 const DINHEIRO = v => v === null ? 'Não definido' : `R$ ${num(v, 2)}`
+const INVESTIMENTO_INICIAL = 60000
+
+const MISSOES = [
+  {
+    id: 'lucro',
+    texto: 'A doceria começa no prejuízo. Aumente a quantidade vendida até ela sair do prejuízo.',
+    dica: 'Mova "Quantidade vendida no mês" e acompanhe a métrica "Lucro mensal".',
+    sintese: 'A partir de 2.500 unidades, a margem de R$ 6 de cada uma já pagou o custo fixo de R$ 15.000: esse é o ponto de equilíbrio da firma.',
+  },
+  {
+    id: 'margem',
+    texto: 'Deixe o custo variável por unidade igual ou maior que o preço.',
+    dica: 'Aumente "Custo variável unitário" até alcançar o "Preço por unidade".',
+    sintese: 'Sem margem por unidade, vender mais não ajuda a cobrir o custo fixo: não existe ponto de equilíbrio.',
+  },
+  {
+    id: 'investimento',
+    texto: 'Mude o capital investido e compare o lucro com a rentabilidade.',
+    dica: 'Mova "Capital investido" e observe as métricas de lucro, rentabilidade e prazo de retorno.',
+    sintese: 'O lucro não mudou, mas a rentabilidade e o prazo de retorno sim: rentabilidade compara o lucro ao investimento; lucratividade, à receita.',
+  },
+]
+
 const QUESTOES = [
   { pergunta: 'A empresa vende 1.000 unidades a R$ 48, tem custo fixo de R$ 8.000 e variável total de R$ 22.000. Qual o lucro?', resposta: 18000, unidade: 'R$', explicacao: 'Receita = 48 × 1.000 = 48.000; custo = 8.000 + 22.000 = 30.000; lucro = 18.000.' },
   { pergunta: 'Com custo fixo de R$ 15.000, preço de R$ 10 e custo variável unitário de R$ 4, quantas unidades cobrem os custos?', resposta: 2500, unidade: 'unidades', explicacao: 'A contribuição de cada unidade é 10 − 4 = R$ 6. Logo, 15.000 ÷ 6 = 2.500 unidades.' },
@@ -20,9 +44,12 @@ export default function LabCustos({ abrirDesafio }) {
   const [quantidade, setQuantidade] = useState(2000)
   const [fixo, setFixo] = useState(15000)
   const [variavelUnitario, setVariavel] = useState(4)
-  const [investimento, setInvestimento] = useState(60000)
+  const [investimento, setInvestimento] = useState(INVESTIMENTO_INICIAL)
   const r = resultadoFirma({ preco, quantidade, fixo, variavelUnitario, investimento })
+  const cumpridas = missoesCustos({ lucro: r.lucro, preco, variavelUnitario, investimento, investimentoInicial: INVESTIMENTO_INICIAL })
   return <Jornada tema="custos" numero="10" titulo="Custos, receitas e resultado" abrirDesafio={abrirDesafio} questoes={QUESTOES}
+    missoes={MISSOES} cumpridas={cumpridas}
+    fechamento={{ texto: 'Lucro é receita menos custo total, e o ponto de equilíbrio é onde a margem de cada unidade paga o custo fixo. Este é o último tema da disciplina.', proximo: null }}
     fonte="Base: aula 12, Custos, Receitas, Break-Even, Lucratividade e Rentabilidade. A planilha da aula complementa o conteúdo com tabelas e exercícios. Valores do simulador por mês."
     experimento={interagir => {
       const controle = setter => v => { setter(v); interagir() }
@@ -40,5 +67,5 @@ export default function LabCustos({ abrirDesafio }) {
       <TabelaDeCustos onInteragir={interagir} />
       <details className="complemento"><summary>Complemento da aula: preço, quantidade e receita</summary><p>Na tabela da planilha, Q = 20 − 2P. Aqui a quantidade reage ao preço; é outro cenário, separado da simulação de volume com preço constante acima.</p><div className="tabela-scroll"><table className="dados-tabela"><caption>Receitas do exercício</caption><thead><tr><th>Preço (R$)</th><th>Quantidade</th><th>Receita total (R$)</th><th>Receita média (R$)</th></tr></thead><tbody>{Array.from({ length: 10 }, (_, i) => i + 1).map(p => { const q = 20 - 2 * p; return <tr key={p}><th scope="row">{p}</th><td>{q}</td><td>{p * q}</td><td>{q === 0 ? 'Não definida (Q = 0)' : p}</td></tr> })}</tbody></table></div></details></>
     }}
-    explicacao={<><h3>Vender, empatar e remunerar o investimento são perguntas diferentes.</h3><p><b>CT = CF + CV.</b> O custo fixo não muda com a produção no intervalo analisado; o variável muda. Dividindo cada custo por Q, obtemos seus custos médios. O custo marginal é ΔCT ÷ ΔQ, usando a variação efetiva de quantidade entre linhas.</p><p><b>RT = preço × quantidade; receita média = RT ÷ Q; lucro = RT − CT.</b> Com Q = 0, a receita média não é definida. Receita máxima e lucro máximo não são necessariamente o mesmo ponto.</p><p><b>Equilíbrio da firma: Q = CF ÷ (preço − CV unitário).</b> Para o faturamento: CF ÷ [(RT − CV) ÷ RT]. Essas expressões supõem margem positiva e custos e preço compatíveis com o cenário. O ponto de equilíbrio de uma firma é diferente do equilíbrio entre oferta e demanda de um mercado.</p><p><b>Lucratividade = lucro líquido ÷ receita × 100.</b> <b>Rentabilidade = lucro líquido ÷ investimento × 100.</b> Neste modelo simplificado, todos os custos do período estão incluídos no CT e o resultado é usado como lucro líquido. O prazo simples é investimento ÷ lucro por período, supondo lucro positivo e constante, sem descontar o valor do dinheiro no tempo.</p><p>Na simulação atual, o lucro é de <b>{DINHEIRO(r.lucro)} por mês</b>. Alterar o investimento muda a rentabilidade e o prazo de retorno, mas não muda a margem operacional. As tabelas complementares apresentam os dados da planilha como exercícios distintos.</p></>} />
+    explicacao={<><h3>Vender, empatar e remunerar o investimento são perguntas diferentes.</h3><p className="ponte-missoes">Nas missões, você tirou a doceria do prejuízo, eliminou a margem por unidade e viu o investimento mudar a rentabilidade sem mudar o lucro. As fórmulas abaixo organizam essas três ideias.</p><p><b>CT = CF + CV.</b> O custo fixo não muda com a produção no intervalo analisado; o variável muda. Dividindo cada custo por Q, obtemos seus custos médios. O custo marginal é ΔCT ÷ ΔQ, usando a variação efetiva de quantidade entre linhas.</p><p><b>RT = preço × quantidade; receita média = RT ÷ Q; lucro = RT − CT.</b> Com Q = 0, a receita média não é definida. Receita máxima e lucro máximo não são necessariamente o mesmo ponto.</p><p><b>Equilíbrio da firma: Q = CF ÷ (preço − CV unitário).</b> Para o faturamento: CF ÷ [(RT − CV) ÷ RT]. Essas expressões supõem margem positiva e custos e preço compatíveis com o cenário. O ponto de equilíbrio de uma firma é diferente do equilíbrio entre oferta e demanda de um mercado.</p><p><b>Lucratividade = lucro líquido ÷ receita × 100.</b> <b>Rentabilidade = lucro líquido ÷ investimento × 100.</b> Neste modelo simplificado, todos os custos do período estão incluídos no CT e o resultado é usado como lucro líquido. O prazo simples é investimento ÷ lucro por período, supondo lucro positivo e constante, sem descontar o valor do dinheiro no tempo.</p><p>Na simulação atual, o lucro é de <b>{DINHEIRO(r.lucro)} por mês</b>. Alterar o investimento muda a rentabilidade e o prazo de retorno, mas não muda a margem operacional. As tabelas complementares apresentam os dados da planilha como exercícios distintos.</p></>} />
 }

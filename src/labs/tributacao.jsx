@@ -3,8 +3,36 @@ import Jornada, { Metricas, GraficoLinhas } from '../shared/Jornada.jsx'
 import Slider from '../shared/Slider.jsx'
 import { num } from '../shared/formato.js'
 import { tributo, precoTributado, arrecadacao } from './firma.js'
+import { missoesTributacao } from './missoes.js'
 
 const RENDAS = [2000, 5000, 10000]
+const MISSOES = [
+  {
+    id: 'proporcional',
+    texto: 'No primeiro painel, troque a regra para "Alíquota proporcional" e compare o peso efetivo nas três rendas.',
+    dica: 'Use o seletor "Regra hipotética".',
+    sintese: 'Quem ganha mais paga mais em reais, mas o percentual da renda é o mesmo: proporcional. No valor fixo de R$ 200, o peso caía com a renda: regressivo.',
+  },
+  {
+    id: 'progressivo',
+    texto: 'Agora escolha as faixas progressivas, com alíquota acima de zero.',
+    dica: 'Selecione "Duas faixas progressivas" e deixe a alíquota de referência acima de 0%.',
+    sintese: 'O percentual efetivo sobe com a renda: progressivo. A alíquota cheia vale só para a parte da renda acima de R$ 3.000.',
+  },
+  {
+    id: 'relativos',
+    texto: 'No segundo painel, deixe o tributo do bem A diferente do tributo do bem B.',
+    dica: 'Mova só um dos dois controles de tributo.',
+    sintese: 'A razão entre os preços mudou: o tributo deixa de ser neutro e muda o incentivo a consumir um bem em vez do outro.',
+  },
+  {
+    id: 'laffer',
+    texto: 'No terceiro painel, suba a alíquota além do ponto em que a arrecadação começa a cair.',
+    dica: 'Acompanhe o marcador no gráfico: suba a alíquota até a curva passar do topo.',
+    sintese: 'Acima de certo ponto, a base encolhe mais do que a alíquota sobe, e a arrecadação cai. Mude a sensibilidade: o topo muda junto, por isso não há alíquota ideal universal.',
+  },
+]
+
 const QUESTOES = [
   { pergunta: 'Um tributo de R$ 200 sobre renda de R$ 2.000 representa qual alíquota efetiva?', resposta: 10, unidade: '%', explicacao: '200 ÷ 2.000 × 100 = 10%.' },
   { pergunta: 'Se a alíquota efetiva aumenta conforme a renda cresce, o sistema é…', opcoes: ['Progressivo', 'Proporcional', 'Regressivo'], resposta: 'Progressivo', explicacao: 'A participação do tributo na renda aumenta com a capacidade econômica.' },
@@ -21,7 +49,10 @@ export default function LabTributacao({ abrirDesafio }) {
   const [t, setT] = useState(30)
   const [sens, setSens] = useState(1)
   const a = precoTributado(10, taxaA), b = precoTributado(30, taxaB)
+  const cumpridas = missoesTributacao({ sistema, aliquota, taxaA, taxaB, t, sens })
   return <Jornada tema="tributacao" numero="08" titulo="Tributação" abrirDesafio={abrirDesafio} questoes={QUESTOES}
+    missoes={MISSOES} cumpridas={cumpridas}
+    fechamento={{ texto: 'O mesmo valor pode pesar diferente em rendas diferentes, e tributos diferentes mudam os preços relativos. O tema 9 passa para o outro lado do mercado: como a firma produz.', proximo: { id: 'producao', titulo: 'Produção e rendimentos' } }}
     fonte="Base: aula 10, Tributação. Faixas, alíquotas e resposta da base tributável são hipóteses didáticas; não representam a legislação vigente."
     experimento={interagir => <>
       <div className="lab-shell"><aside className="controls-panel"><p className="panel-title">MESMO VALOR, MESMO PESO?</p>
@@ -32,5 +63,5 @@ export default function LabTributacao({ abrirDesafio }) {
       <div className="lab-shell"><aside className="controls-panel"><p className="panel-title">NEUTRALIDADE E PREÇOS RELATIVOS</p><p>Dois bens custam R$ 10 e R$ 30 antes dos tributos. Assuma repasse integral ao preço e nenhum outro ajuste.</p><Slider label="Tributo sobre o bem A" value={taxaA} min={0} max={60} suffix="%" onChange={v => { setTaxaA(v); interagir() }} /><Slider label="Tributo sobre o bem B" value={taxaB} min={0} max={60} suffix="%" onChange={v => { setTaxaB(v); interagir() }} /></aside><div className="market-panel"><h3>Quanto de um bem vale o outro?</h3><Metricas itens={[["Preço final A", `R$ ${num(a, 2)}`], ['Preço final B', `R$ ${num(b, 2)}`], ['Razão A / B antes', num(1 / 3, 3)], ['Razão A / B depois', num(a / b, 3)]]} /><p className="insight">{taxaA === taxaB ? 'Com a mesma alíquota e essas hipóteses, a razão entre os preços é preservada.' : 'Com alíquotas diferentes, a razão entre os preços muda, alterando o incentivo relativo de consumo.'} Preservar essa razão, isoladamente, não demonstra ausência de todos os efeitos econômicos do tributo.</p></div></div>
       <div className="lab-shell"><aside className="controls-panel"><p className="panel-title">ALÍQUOTA × ARRECADAÇÃO</p><Slider label="Alíquota simulada" value={t} min={0} max={100} suffix="%" onChange={v => { setT(v); interagir() }} /><Slider label="Sensibilidade da base" value={sens} min={0.5} max={3} step={0.5} onChange={v => { setSens(v); interagir() }} /><p className="tabela-ajuda">Hipótese: base = 100.000 × (1 − alíquota)^sensibilidade. Maior sensibilidade significa maior redução da base quando a alíquota aumenta. A curva não é uma previsão empírica.</p></aside><div className="market-panel"><h3>O resultado depende da reação da base.</h3><GraficoLinhas series={[{ nome: 'Arrecadação hipotética', pontos: Array.from({ length: 101 }, (_, i) => [i, arrecadacao(i, sens)]) }]} maxX={100} maxY={40000} eixoX="ALÍQUOTA (%)" eixoY="ARRECADAÇÃO (R$)" marcador={[t, arrecadacao(t, sens)]} /><Metricas itens={[["Alíquota", `${t}%`], ['Arrecadação simulada', `R$ ${num(arrecadacao(t, sens), 2)}`]]} /></div></div>
     </>}
-    explicacao={<><h3>Quem paga, quanto pesa e quais incentivos mudam?</h3><p><b>Neutralidade</b> orienta a reduzir distorções na alocação; <b>equidade</b> considera a distribuição do ônus. O princípio do benefício relaciona contribuição e benefícios recebidos, mas medir benefícios individuais de serviços coletivos pode ser difícil.</p><p>Pelo princípio da <b>capacidade contributiva</b>, capacidades iguais recebem igual tratamento (equidade horizontal), enquanto capacidades diferentes podem receber tratamento diferente (equidade vertical).</p><p>Uma carga <b>proporcional</b> mantém o percentual efetivo; uma carga <b>progressiva</b> aumenta esse percentual com a renda; uma carga <b>regressiva</b> pesa proporcionalmente mais nas rendas menores. Alíquota marginal de uma faixa é diferente da alíquota efetiva sobre a renda inteira.</p><p>Na classificação introdutória da aula, <b>impostos</b> não dependem de uma prestação estatal específica ao contribuinte; <b>taxas</b> se vinculam a serviço específico ou poder de polícia; <b>contribuições de melhoria</b> se relacionam à valorização imobiliária decorrente de obra pública. Tributos diretos recaem sobre renda ou patrimônio; indiretos, sobre bens e serviços. Estes são conceitos de estudo, sem reproduzir tabelas legais.</p><p>A <b>curva de Laffer</b> ilustra uma possível relação entre alíquota, base e arrecadação. O formato e o ponto máximo dependem do comportamento da base. Mudar a sensibilidade na simulação mostra por que não se pode deduzir uma alíquota ideal universal a partir do desenho.</p><h3>Reforma da tributação do consumo</h3><p>O IVA dual combina a CBS federal e o IBS de estados e municípios. A CBS substitui PIS/Cofins; o IBS substitui ICMS/ISS durante a transição. O IPI tem tratamento específico, com redução a zero para a maioria dos produtos e exceções ligadas à Zona Franca de Manaus. A reforma também cria o Imposto Seletivo.</p><p>O esquema introdutório da aula não representa sozinho todas as regras e exceções. Consulte o <a href="https://www.gov.br/receitafederal/pt-br/acesso-a-informacao/acoes-e-programas/reforma-tributaria-do-consumo/entenda" target="_blank" rel="noreferrer">guia da Receita Federal sobre a reforma</a> para acompanhar a implementação. Referência consultada em 12/11/2026.</p></>} />
+    explicacao={<><h3>Quem paga, quanto pesa e quais incentivos mudam?</h3><p className="ponte-missoes">Nas missões, você comparou regras fixa, proporcional e progressiva, quebrou a neutralidade entre dois bens e passou do topo da curva de arrecadação. Os conceitos abaixo dão nome a cada uma dessas situações.</p><p><b>Neutralidade</b> orienta a reduzir distorções na alocação; <b>equidade</b> considera a distribuição do ônus. O princípio do benefício relaciona contribuição e benefícios recebidos, mas medir benefícios individuais de serviços coletivos pode ser difícil.</p><p>Pelo princípio da <b>capacidade contributiva</b>, capacidades iguais recebem igual tratamento (equidade horizontal), enquanto capacidades diferentes podem receber tratamento diferente (equidade vertical).</p><p>Uma carga <b>proporcional</b> mantém o percentual efetivo; uma carga <b>progressiva</b> aumenta esse percentual com a renda; uma carga <b>regressiva</b> pesa proporcionalmente mais nas rendas menores. Alíquota marginal de uma faixa é diferente da alíquota efetiva sobre a renda inteira.</p><p>Na classificação introdutória da aula, <b>impostos</b> não dependem de uma prestação estatal específica ao contribuinte; <b>taxas</b> se vinculam a serviço específico ou poder de polícia; <b>contribuições de melhoria</b> se relacionam à valorização imobiliária decorrente de obra pública. Tributos diretos recaem sobre renda ou patrimônio; indiretos, sobre bens e serviços. Estes são conceitos de estudo, sem reproduzir tabelas legais.</p><p>A <b>curva de Laffer</b> ilustra uma possível relação entre alíquota, base e arrecadação. O formato e o ponto máximo dependem do comportamento da base. Mudar a sensibilidade na simulação mostra por que não se pode deduzir uma alíquota ideal universal a partir do desenho.</p><h3>Reforma da tributação do consumo</h3><p>O IVA dual combina a CBS federal e o IBS de estados e municípios. A CBS substitui PIS/Cofins; o IBS substitui ICMS/ISS durante a transição. O IPI tem tratamento específico, com redução a zero para a maioria dos produtos e exceções ligadas à Zona Franca de Manaus. A reforma também cria o Imposto Seletivo.</p><p>O esquema introdutório da aula não representa sozinho todas as regras e exceções. Consulte o <a href="https://www.gov.br/receitafederal/pt-br/acesso-a-informacao/acoes-e-programas/reforma-tributaria-do-consumo/entenda" target="_blank" rel="noreferrer">guia da Receita Federal sobre a reforma</a> para acompanhar a implementação. Referência consultada em 12/11/2026.</p></>} />
 }

@@ -3,6 +3,7 @@ import Jornada, { Metricas } from '../shared/Jornada.jsx'
 import Slider from '../shared/Slider.jsx'
 import { num } from '../shared/formato.js'
 import { bemColetivo, projetoArriscado } from './firma.js'
+import { missoesPublicos } from './missoes.js'
 
 const BENS = [
   ['Rival e exclusivo', 'Café comprado na cafeteria: a unidade consumida não está disponível para outra pessoa.'],
@@ -10,6 +11,33 @@ const BENS = [
   ['Não rival e exclusivo', 'Conteúdo digital por assinatura, sem congestionamento: é possível limitar o acesso.'],
   ['Não rival e não exclusivo', 'Iluminação de uma rua: beneficiar mais um pedestre não reduz a luz para os demais.'],
 ]
+const MISSOES = [
+  {
+    id: 'classificar',
+    texto: 'No primeiro painel, marque os atributos de um café comprado na cafeteria.',
+    dica: 'Quem toma o café não deixa para outro, e quem não paga não leva: marque as duas caixas.',
+    sintese: 'Rival e exclusivo: um bem privado comum. O bem público puro fica no canto oposto da matriz, não rival e não exclusivo, como a iluminação da rua.',
+  },
+  {
+    id: 'carona',
+    texto: 'No jogo de contribuição, deixe sua contribuição em zero enquanto os outros contribuem.',
+    dica: 'Zere "Sua contribuição" e deixe a dos outros acima de zero.',
+    sintese: 'Seu saldo ficou maior que o de quem contribuiu: você recebe sua parte do fundo sem pagar. Esse é o carona.',
+  },
+  {
+    id: 'todos',
+    texto: 'Agora faça todos contribuírem o máximo, R$ 20.',
+    dica: 'Leve os dois controles do jogo até R$ 20.',
+    sintese: 'Cada pessoa termina com R$ 32, mais do que os R$ 20 de quando ninguém contribui. O melhor para o grupo não é o que o incentivo individual sugere.',
+  },
+  {
+    id: 'subsidio',
+    texto: 'No projeto arriscado, com 30% de chance de sucesso, encontre um subsídio que deixe o resultado privado esperado em zero ou mais.',
+    dica: 'Com 30% de chance, a receita esperada é R$ 60 mi para um custo de R$ 100 mi. Quanto falta?',
+    sintese: 'O subsídio cobre os R$ 40 mi que faltavam, mas não muda a chance de sucesso, e o custo passa para a sociedade.',
+  },
+]
+
 const QUESTOES = [
   { pergunta: 'A iluminação de uma rua aberta a todos, sem congestionamento, é…', opcoes: BENS.map(b => b[0]), resposta: BENS[3][0], explicacao: 'Seu uso não reduz a disponibilidade para os outros e é difícil excluir quem não pagou.' },
   { pergunta: 'A pesca em um lago de acesso aberto, com estoque limitado, é…', opcoes: BENS.map(b => b[0]), resposta: BENS[1][0], explicacao: 'Há rivalidade pelo estoque de peixes e ausência de exclusão no acesso descrito.' },
@@ -28,7 +56,10 @@ export default function LabPublicos({ abrirDesafio }) {
   const r = bemColetivo(sua, outros)
   const projeto = projetoArriscado({ custo: 100, chance, receita: 200, subsidio })
   const indice = (rival ? 0 : 2) + (exclusivo ? 0 : 1)
+  const cumpridas = missoesPublicos({ rival, exclusivo, sua, outros, chance, subsidio })
   return <Jornada tema="publicos" numero="07" titulo="Bens públicos e riscos" abrirDesafio={abrirDesafio} questoes={QUESTOES}
+    missoes={MISSOES} cumpridas={cumpridas}
+    fechamento={{ texto: 'Quando não dá para excluir quem não paga, o incentivo ao carona pode deixar um bem útil sem financiamento. O tema 8 trata de uma forma de financiar o que é coletivo: os tributos.', proximo: { id: 'tributacao', titulo: 'Tributação' } }}
     fonte="Base: aula 9, Falhas de Mercado, Bens Públicos e Riscos Pesados. O jogo de contribuição e o projeto de pesquisa são cenários didáticos hipotéticos."
     experimento={interagir => <>
       <div className="lab-shell"><aside className="controls-panel"><p className="panel-title">COMO ESSE BEM É CONSUMIDO?</p><p>Classifique pelos atributos, independentemente de quem produz.</p>
@@ -47,5 +78,5 @@ export default function LabPublicos({ abrirDesafio }) {
         <Slider label="Subsídio público" value={subsidio} min={0} max={100} suffix=" milhões R$" onChange={v => { setSubsidio(v); interagir() }} />
       </aside><div className="market-panel"><h3>Quem assume o risco e quem financia?</h3><Metricas itens={[["Receita privada esperada", `R$ ${num(projeto.esperado, 1)} mi`], ['Resultado privado esperado', `R$ ${num(projeto.privado, 1)} mi`], ['Custo público do apoio', `R$ ${subsidio} mi`]]} /><p className="tabela-ajuda">Nesta simulação, a média ponderada mostra a visão do mercado sobre a viabilidade do projeto: com {chance}% de chance de sucesso, a receita esperada é R$ {num(projeto.esperado, 1)} mi.<br /><strong>{chance}% × R$ 200 mi + {100 - chance}% × R$ 0 = R$ {num(projeto.esperado, 1)} mi</strong></p><p className="insight">Receita média de R$ {num(projeto.esperado, 1)} mi − custo de R$ 100 mi + subsídio de R$ {subsidio} mi = resultado privado esperado de R$ {num(projeto.privado, 1)} mi. O subsídio muda quem paga parte do custo, mas não a chance de sucesso. Para avaliar o apoio, também é preciso considerar os benefícios sociais e o custo público.</p></div></div>
     </>}
-    explicacao={<><h3>O benefício pode chegar a quem não consegue ser cobrado.</h3><p>Um bem público puro é <b>não rival e não exclusivo</b>. O consumo adicional não reduz a disponibilidade para os demais, e excluir usuários é inviável ou muito difícil. Ser oferecido pelo governo não basta para um bem ter esses atributos.</p><p>O incentivo ao <b>carona</b> pode levar à contribuição voluntária insuficiente, mesmo quando financiar o bem beneficiaria o grupo. No jogo, uma contribuição individual tem retorno privado de 0,32 por real e retorno social de 1,60; esses números são hipóteses, não uma estimativa de um serviço público real.</p><p>Bens meritórios, como saúde e educação, podem ter rivalidade ou exclusão e ainda assim receber provisão pública por razões sociais. A classificação por atributos é diferente da escolha de política pública.</p><p><b>Poder de mercado</b> pode limitar a concorrência; <b>mercados incompletos</b> deixam demandas sem oferta por falta de financiamento, incerteza ou risco elevado. Projetos de longo prazo podem gerar benefícios que o investidor não consegue capturar.</p><p>Subsídios, incentivos ou provisão pública podem mudar os incentivos. O resultado esperado usa probabilidade × receita e não promete o resultado de uma realização concreta. A análise deve considerar também o custo para a sociedade e o tempo até o retorno.</p></>} />
+    explicacao={<><h3>O benefício pode chegar a quem não consegue ser cobrado.</h3><p className="ponte-missoes">Nas missões, você classificou um bem pelos atributos, foi carona no jogo de contribuição, viu o grupo ganhar quando todos contribuem e usou um subsídio para viabilizar um projeto arriscado. Os conceitos abaixo explicam cada passo.</p><p>Um bem público puro é <b>não rival e não exclusivo</b>. O consumo adicional não reduz a disponibilidade para os demais, e excluir usuários é inviável ou muito difícil. Ser oferecido pelo governo não basta para um bem ter esses atributos.</p><p>O incentivo ao <b>carona</b> pode levar à contribuição voluntária insuficiente, mesmo quando financiar o bem beneficiaria o grupo. No jogo, uma contribuição individual tem retorno privado de 0,32 por real e retorno social de 1,60; esses números são hipóteses, não uma estimativa de um serviço público real.</p><p>Bens meritórios, como saúde e educação, podem ter rivalidade ou exclusão e ainda assim receber provisão pública por razões sociais. A classificação por atributos é diferente da escolha de política pública.</p><p><b>Poder de mercado</b> pode limitar a concorrência; <b>mercados incompletos</b> deixam demandas sem oferta por falta de financiamento, incerteza ou risco elevado. Projetos de longo prazo podem gerar benefícios que o investidor não consegue capturar.</p><p>Subsídios, incentivos ou provisão pública podem mudar os incentivos. O resultado esperado usa probabilidade × receita e não promete o resultado de uma realização concreta. A análise deve considerar também o custo para a sociedade e o tempo até o retorno.</p></>} />
 }
