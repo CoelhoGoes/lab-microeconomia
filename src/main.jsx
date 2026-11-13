@@ -33,7 +33,7 @@ function lerProgresso() {
 }
 
 function App() {
-  const [aba, setAba] = useState(() => TEMAS.some(t => t.id === location.hash.slice(1)) ? location.hash.slice(1) : 'producao')
+  const [aba, setAba] = useState(() => TEMAS.some(t => t.id === location.hash.slice(1)) ? location.hash.slice(1) : 'oportunidade')
   const [progresso, setProgresso] = useState(lerProgresso)
   const indice = TEMAS.findIndex(t => t.id === aba)
   const tema = TEMAS[indice]
