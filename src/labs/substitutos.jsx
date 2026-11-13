@@ -4,8 +4,10 @@ import Chart from '../shared/Chart.jsx'
 import { num } from '../shared/formato.js'
 import { usePersistido } from '../shared/persistencia.js'
 import SecoesDoModulo from '../shared/SecoesDoModulo.jsx'
-import Previsao, { Reflexao } from '../shared/Previsao.jsx'
-import { criarSecoes, PassoEntender } from '../shared/Jornada.jsx'
+import Previsao, { Reflexao, Aposta } from '../shared/Previsao.jsx'
+import Missoes, { useMissoes } from '../shared/Missoes.jsx'
+import { criarSecoes, PassoEntender, Fechamento } from '../shared/Jornada.jsx'
+import { missoesDemandaOferta } from './missoes.js'
 import { gerarRodada, resolver, enunciado, RELACOES } from './pares-demanda.js'
 import {
   situacao,
@@ -41,7 +43,8 @@ export default function LabSubstitutos({ abrirDesafio = 0 }) {
   const [secao, setSecao] = useState('previsao')
   const [previsao, setPrevisao] = usePersistido('microlab:demanda-oferta:previsao', null)
   const [conceitoLido, setConceitoLido] = usePersistido('microlab:demanda-oferta:conceito', false)
-  const [labVisitado, setLabVisitado] = usePersistido('microlab:demanda-oferta:experimento-v2', false)
+  // As missões só contam depois que o aluno mexe: o cenário inicial não cumpre nada sozinho.
+  const [mexeu, setMexeu] = useState(false)
   const [rodadas, setRodadas] = usePersistido('microlab:demanda-oferta:rodadas', 0)
   const [rodada, setRodada] = useState(() => gerarRodada())
   const [respostas, setRespostas] = useState({})
@@ -80,7 +83,41 @@ export default function LabSubstitutos({ abrirDesafio = 0 }) {
     setRespostas({})
   }
 
-  const secaoOk = { previsao: previsao !== null, conceito: conceitoLido, laboratorio: labVisitado, desafio: rodadas > 0 }
+  const missoes = [
+    {
+      id: 'movimento',
+      texto: 'Mude só o preço do café, sem mexer nos outros controles. A curva de demanda se move, ou só o ponto?',
+      dica: 'Use apenas o controle "Preço do produto", no topo do painel.',
+      sintese: 'Só o ponto andou: mudar o preço do próprio bem é movimento AO LONGO da curva. As curvas continuam no lugar.',
+    },
+    {
+      id: 'substituto',
+      texto: 'Encareça o substituto do café (o chá) e veja o que acontece com a demanda.',
+      dica: 'Aumente o controle "Preço do substituto".',
+      sintese: 'A curva de demanda inteira foi para a direita: a qualquer preço, mais gente quer café. Isso é DESLOCAMENTO da curva.',
+    },
+    {
+      id: 'complementar',
+      texto: 'Agora encareça um bem complementar, consumido junto com o café.',
+      dica: 'Aumente o controle "Preço do complementar".',
+      sintese: 'Desta vez a demanda vai para a esquerda: o que é consumido junto ficou mais caro, e o café perde interesse.',
+    },
+    {
+      id: 'inferior',
+      texto: 'Escolha "bem inferior" e aumente a renda dos consumidores.',
+      dica: 'Clique no tipo de bem "Inferior" e depois aumente "Variação na renda".',
+      sintese: 'Com mais renda, a demanda por um bem inferior CAI: o consumidor troca por algo melhor. O efeito da renda depende do tipo de bem.',
+    },
+    {
+      id: 'oferta',
+      texto: 'Melhore as condições de produção. Qual curva se desloca agora?',
+      dica: 'Aumente o controle "Condições de produção".',
+      sintese: 'Agora é a oferta que vai para a direita: tecnologia e custos mudam quem vende, não quem compra.',
+    },
+  ]
+  const missoesFeitas = useMissoes('demanda-oferta', mexeu ? missoesDemandaOferta({ preco, precoInicial: CENARIO_PADRAO.preco, renda, substituto, complementar, producao, tipoBem }) : [])
+
+  const secaoOk = { previsao: previsao !== null, conceito: conceitoLido, laboratorio: missoesFeitas.length === missoes.length, desafio: rodadas > 0 }
 
   const irPara = id => {
     setSecao(id)
@@ -107,13 +144,14 @@ export default function LabSubstitutos({ abrirDesafio = 0 }) {
       onIr={irPara}
     />
 
-    {secao === 'previsao' && <Previsao tema="demanda-oferta" resposta={previsao} onResponder={setPrevisao} onContinuar={() => irPara('laboratorio')} />}
+    {secao === 'previsao' && <Previsao tema="demanda-oferta" anotar resposta={previsao} onResponder={setPrevisao} onContinuar={() => irPara('laboratorio')} />}
     {secao === 'conceito' && <Reflexao tema="demanda-oferta" resposta={previsao} />}
 
     {secao === 'conceito' && (
       <div className="conceito">
         <p className="eyebrow">3.3 · ENTENDER</p>
         <h3>O que move a curva, e o que move o ponto</h3>
+        <p className="ponte-missoes">Nas missões, você mudou só o preço e viu o ponto andar; depois mexeu no substituto, no complementar, na renda e na produção e viu as curvas inteiras saírem do lugar. Essa é a distinção que o tema inteiro trabalha.</p>
         <p>
           Mudar o <b>preço do próprio bem</b> desliza o ponto <b>ao longo</b> da curva. Qualquer
           outro fator — renda, preço de bens relacionados, gosto, tecnologia — <b>desloca a curva
@@ -150,8 +188,12 @@ export default function LabSubstitutos({ abrirDesafio = 0 }) {
       </div>
     )}
 
-    <div className={secao === 'laboratorio' || secao === 'desafio' ? 'secao' : 'secao oculto'}>
-    <div className="lab-shell" onChange={() => setLabVisitado(true)} onClick={e => { if (e.target.closest('button')) setLabVisitado(true) }}>
+    <div className={secao === 'laboratorio' ? 'secao' : secao === 'desafio' ? 'secao modo-aplicar' : 'secao oculto'}>
+      {secao === 'laboratorio' && <>
+        <Aposta tema="demanda-oferta" resposta={previsao} />
+        <Missoes missoes={missoes} feitas={missoesFeitas} aoConcluirTodas={<p className="metas-fim">✦ Missões cumpridas. Explore os controles à vontade ou siga para entender o resultado.</p>} />
+      </>}
+    <div className="lab-shell" onChange={() => setMexeu(true)} onClick={e => { if (e.target.closest('button')) setMexeu(true) }}>
       <aside className="controls-panel">
         <div className="panel-title"><span className="pulse"></span> CONTROLES DO CENÁRIO</div>
 

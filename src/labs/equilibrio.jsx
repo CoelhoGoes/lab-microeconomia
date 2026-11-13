@@ -4,8 +4,10 @@ import Chart from '../shared/Chart.jsx'
 import { num } from '../shared/formato.js'
 import { usePersistido } from '../shared/persistencia.js'
 import SecoesDoModulo from '../shared/SecoesDoModulo.jsx'
-import Previsao, { Reflexao } from '../shared/Previsao.jsx'
-import { criarSecoes, PassoEntender } from '../shared/Jornada.jsx'
+import Previsao, { Reflexao, Aposta } from '../shared/Previsao.jsx'
+import Missoes, { useMissoes } from '../shared/Missoes.jsx'
+import { criarSecoes, PassoEntender, Fechamento } from '../shared/Jornada.jsx'
+import { missoesEquilibrio } from './missoes.js'
 import { METAS } from './metas-equilibrio.js'
 import { CENARIOS, choquesDo } from './cenarios-equilibrio.js'
 import {
@@ -63,11 +65,12 @@ export default function LabEquilibrio({ abrirDesafio = 0 }) {
   const [secao, setSecao] = useState('previsao')
   const [previsao, setPrevisao] = usePersistido('microlab:equilibrio:previsao', null)
   const [conceitoLido, setConceitoLido] = usePersistido('microlab:equilibrio:conceito', false)
-  const [labVisitado, setLabVisitado] = usePersistido('microlab:equilibrio:experimento-v2', false)
   const [feitas, setFeitas] = usePersistido('microlab:equilibrio:metas', [])
   // O cenário inicial já nasce com excesso de oferta. Sem esta trava, a meta
   // correspondente seria dada de graça a quem só abriu a aba.
   const [interagiu, setInteragiu] = useState(false)
+  // Missão 2: o ajuste automático chegou ao equilíbrio pelo menos uma vez.
+  const [ajusteConcluido, setAjusteConcluido] = useState(false)
 
   const deslocDemanda = choqueDemanda * EFEITO_RENDA
   const deslocOferta = choqueOferta * EFEITO_PRODUCAO
@@ -83,6 +86,7 @@ export default function LabEquilibrio({ abrirDesafio = 0 }) {
     if (!ajustando) return
     if (Math.abs(mercado.folga) <= TOLERANCIA_FOLGA) {
       setAjustando(false)
+      setAjusteConcluido(true)
       return
     }
     const id = setTimeout(
@@ -139,9 +143,37 @@ export default function LabEquilibrio({ abrirDesafio = 0 }) {
   const leitura = LEITURA[mercado.tipo]
   const distancia = preco - mercado.equilibrio.preco
 
+  const missoes = [
+    {
+      id: 'escassez',
+      texto: 'Baixe o preço abaixo do equilíbrio até aparecer escassez.',
+      dica: 'Arraste o controle de preço para a esquerda e observe o status do mercado.',
+      sintese: 'A esse preço, quem quer comprar não encontra produto: a quantidade demandada supera a ofertada. Essa diferença é a escassez.',
+    },
+    {
+      id: 'ajuste',
+      texto: 'Clique em "Deixar o mercado ajustar" e acompanhe o preço.',
+      dica: 'O botão fica abaixo dos controles de preço; ele só funciona fora do equilíbrio.',
+      sintese: 'O preço se moveu sozinho até a folga zerar. Isso é o equilíbrio: o que se quer comprar é exatamente o que se quer vender.',
+    },
+    {
+      id: 'excesso',
+      texto: 'Agora suba o preço acima do equilíbrio.',
+      dica: 'Arraste o controle de preço para a direita.',
+      sintese: 'Sobra produto nas prateleiras: a quantidade ofertada supera a demandada. Vender exige baixar o preço, por isso a pressão é de baixa.',
+    },
+    {
+      id: 'cenario',
+      texto: 'Aplique um dos casos da aula, por exemplo "Estiagem", e veja o novo equilíbrio.',
+      dica: 'Os casos ficam nos botões do painel de controles.',
+      sintese: 'O choque deslocou uma curva e o equilíbrio mudou de lugar. O preço antigo virou escassez ou excesso até o mercado se ajustar de novo.',
+    },
+  ]
+  const missoesFeitas = useMissoes('equilibrio', interagiu ? missoesEquilibrio({ tipo: mercado.tipo, ajusteConcluido, cenarioId }) : [])
+
   const secaoOk = { previsao: previsao !== null,
     conceito: conceitoLido,
-    laboratorio: labVisitado,
+    laboratorio: missoesFeitas.length === missoes.length,
     desafio: feitas.length === METAS.length,
   }
 
@@ -169,7 +201,7 @@ export default function LabEquilibrio({ abrirDesafio = 0 }) {
       onIr={irPara}
     />
 
-    {secao === 'previsao' && <Previsao tema="equilibrio" resposta={previsao} onResponder={setPrevisao} onContinuar={() => irPara('laboratorio')} />}
+    {secao === 'previsao' && <Previsao tema="equilibrio" anotar resposta={previsao} onResponder={setPrevisao} onContinuar={() => irPara('laboratorio')} />}
     {secao === 'conceito' && <Reflexao tema="equilibrio" resposta={previsao} />}
 
     {secao === 'conceito' && (
@@ -177,7 +209,11 @@ export default function LabEquilibrio({ abrirDesafio = 0 }) {
     )}
 
     <div className={secao === 'laboratorio' || secao === 'desafio' ? 'secao' : 'secao oculto'}>
-    <div className="lab-shell" onChange={() => setLabVisitado(true)} onClick={e => { if (e.target.closest('button')) setLabVisitado(true) }}>
+      {secao === 'laboratorio' && <>
+        <Aposta tema="equilibrio" resposta={previsao} />
+        <Missoes missoes={missoes} feitas={missoesFeitas} aoConcluirTodas={<p className="metas-fim">✦ Missões cumpridas. Explore os controles à vontade ou siga para entender o resultado.</p>} />
+      </>}
+    <div className="lab-shell">
       <aside className="controls-panel">
         <div className="panel-title"><span className="pulse"></span> CONTROLES DO CENÁRIO</div>
 
@@ -305,6 +341,7 @@ function Conceito({ lido, onLido }) {
     <div className="conceito">
       <p className="eyebrow">4.3 · ENTENDER</p>
       <h3>O preço que põe o mercado em repouso</h3>
+      <p className="ponte-missoes">Nas missões, você provocou escassez e excesso mexendo no preço, deixou o mercado se ajustar sozinho e aplicou um choque da aula. O texto abaixo explica a força que move o preço em cada caso.</p>
       <p>
         O <b>equilíbrio</b> é o par de preço e quantidade em que tudo que se quer comprar é
         exatamente o que se quer vender. É o único preço em que ninguém tem motivo para mudar

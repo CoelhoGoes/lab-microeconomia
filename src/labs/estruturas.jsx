@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react'
 import { usePersistido } from '../shared/persistencia.js'
 import SecoesDoModulo from '../shared/SecoesDoModulo.jsx'
-import Previsao, { Reflexao } from '../shared/Previsao.jsx'
-import { criarSecoes, PassoEntender } from '../shared/Jornada.jsx'
+import Previsao, { Reflexao, Aposta } from '../shared/Previsao.jsx'
+import Missoes, { useMissoes } from '../shared/Missoes.jsx'
+import { criarSecoes, PassoEntender, Fechamento } from '../shared/Jornada.jsx'
+import { missoesEstruturas } from './missoes.js'
 import {
   classificar, gerarRodada, enunciado,
   ESTRUTURAS, QUANTIDADES, FORA_DO_RECORTE,
@@ -20,7 +22,8 @@ export default function LabEstruturas({ abrirDesafio = 0 }) {
   const [secao, setSecao] = useState('previsao')
   const [previsao, setPrevisao] = usePersistido('microlab:estruturas:previsao', null)
   const [conceitoLido, setConceitoLido] = usePersistido('microlab:estruturas:conceito', false)
-  const [labVisitado, setLabVisitado] = usePersistido('microlab:estruturas:experimento-v2', false)
+  // As missões só contam depois que o aluno mexe: o cenário inicial não cumpre nada sozinho.
+  const [mexeu, setMexeu] = useState(false)
   const [rodadas, setRodadas] = usePersistido('microlab:estruturas:rodadas', 0)
   const [rodada, setRodada] = useState(() => gerarRodada())
   const [respostas, setRespostas] = useState({})
@@ -40,7 +43,35 @@ export default function LabEstruturas({ abrirDesafio = 0 }) {
     setRespostas({})
   }
 
-  const secaoOk = { previsao: previsao !== null, conceito: conceitoLido, laboratorio: labVisitado, desafio: rodadas > 0 }
+  const missoes = [
+    {
+      id: 'monopolio',
+      texto: 'Monte um mercado com uma única empresa vendendo para muitos compradores.',
+      dica: 'Em "Quantos vendem", escolha um; em "Quantos compram", muitos.',
+      sintese: 'Monopólio: todo o poder sobre o preço fica com quem vende.',
+    },
+    {
+      id: 'oligopolio',
+      texto: 'Agora deixe poucas empresas vendendo para muitos compradores.',
+      dica: 'Mude "Quantos vendem" para poucos.',
+      sintese: 'Oligopólio: poucas vendedoras, entrada difícil e risco de combinarem o preço (cartel).',
+    },
+    {
+      id: 'monopsonio',
+      texto: 'Inverta os lados: muitos vendem e só um compra.',
+      dica: 'Em "Quantos vendem", escolha muitos; em "Quantos compram", um.',
+      sintese: 'Monopsônio: o poder passa para o lado da compra. O sufixo -pólio indica venda; -psônio, compra.',
+    },
+    {
+      id: 'diferenciado',
+      texto: 'Volte para muitos dos dois lados e torne o produto diferenciado.',
+      dica: 'Escolha muitos nos dois lados e clique em "Diferenciado".',
+      sintese: 'Concorrência monopolista: a contagem é a mesma da concorrência perfeita, mas cada um vende algo diferente, o que dá um pequeno poder sobre o preço.',
+    },
+  ]
+  const missoesFeitas = useMissoes('estruturas', mexeu ? missoesEstruturas({ estrutura: chave }) : [])
+
+  const secaoOk = { previsao: previsao !== null, conceito: conceitoLido, laboratorio: missoesFeitas.length === missoes.length, desafio: rodadas > 0 }
 
   const irPara = id => {
     setSecao(id)
@@ -65,13 +96,14 @@ export default function LabEstruturas({ abrirDesafio = 0 }) {
       onIr={irPara}
     />
 
-    {secao === 'previsao' && <Previsao tema="estruturas" resposta={previsao} onResponder={setPrevisao} onContinuar={() => irPara('laboratorio')} />}
+    {secao === 'previsao' && <Previsao tema="estruturas" anotar resposta={previsao} onResponder={setPrevisao} onContinuar={() => irPara('laboratorio')} />}
     {secao === 'conceito' && <Reflexao tema="estruturas" resposta={previsao} />}
 
     {secao === 'conceito' && (
       <div className="conceito">
         <p className="eyebrow">6.3 · ENTENDER</p>
         <h3>Quem tem poder sobre o preço, e por quê</h3>
+        <p className="ponte-missoes">Nas missões, você montou monopólio, oligopólio e monopsônio mudando só quantos vendem e quantos compram, e chegou à concorrência monopolista diferenciando o produto. A regra por trás dessas classificações está abaixo.</p>
         <p>
           Duas perguntas classificam qualquer mercado: <b>quantos agentes</b> há de cada lado, e
           se <b>dá para entrar e sair</b> livremente. Quanto menos participantes e maiores as
@@ -105,8 +137,12 @@ export default function LabEstruturas({ abrirDesafio = 0 }) {
       </div>
     )}
 
-    <div className={secao === 'laboratorio' || secao === 'desafio' ? 'secao' : 'secao oculto'}>
-      <div className="lab-shell" onChange={() => setLabVisitado(true)} onClick={e => { if (e.target.closest('button')) setLabVisitado(true) }}>
+    <div className={secao === 'laboratorio' ? 'secao' : secao === 'desafio' ? 'secao modo-aplicar' : 'secao oculto'}>
+      {secao === 'laboratorio' && <>
+        <Aposta tema="estruturas" resposta={previsao} />
+        <Missoes missoes={missoes} feitas={missoesFeitas} aoConcluirTodas={<p className="metas-fim">✦ Missões cumpridas. Explore os controles à vontade ou siga para entender o resultado.</p>} />
+      </>}
+      <div className="lab-shell" onChange={() => setMexeu(true)} onClick={e => { if (e.target.closest('button')) setMexeu(true) }}>
         <aside className="controls-panel">
           <div className="panel-title"><span className="pulse"></span> COMO É ESTE MERCADO</div>
           <p className="tabela-ajuda">

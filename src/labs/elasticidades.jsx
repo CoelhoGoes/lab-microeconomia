@@ -3,8 +3,10 @@ import Slider from '../shared/Slider.jsx'
 import { num } from '../shared/formato.js'
 import { usePersistido } from '../shared/persistencia.js'
 import SecoesDoModulo from '../shared/SecoesDoModulo.jsx'
-import Previsao, { Reflexao } from '../shared/Previsao.jsx'
-import { criarSecoes, PassoEntender } from '../shared/Jornada.jsx'
+import Previsao, { Reflexao, Aposta } from '../shared/Previsao.jsx'
+import Missoes, { useMissoes } from '../shared/Missoes.jsx'
+import { criarSecoes, PassoEntender, Fechamento } from '../shared/Jornada.jsx'
+import { missoesElasticidades } from './missoes.js'
 import {
   elasticidadePreco, classificarElasticidade, precoChoke, PRECO_MIN,
   elasticidadeRenda, classificarElasticidadeRenda, TIPOS_DE_BEM, TIPOS_DE_BEM_IDS,
@@ -97,7 +99,8 @@ export default function LabElasticidades({ abrirDesafio = 0 }) {
   const [secao, setSecao] = useState('previsao')
   const [previsao, setPrevisao] = usePersistido('microlab:elasticidades:previsao', null)
   const [conceitoLido, setConceitoLido] = usePersistido('microlab:elasticidades:conceito', false)
-  const [labVisitado, setLabVisitado] = usePersistido('microlab:elasticidades:experimento-v2', false)
+  // As missões só contam depois que o aluno mexe: o cenário inicial não cumpre nada sozinho.
+  const [mexeu, setMexeu] = useState(false)
   // A rodada vive só em memória: cada treino é sorteado na hora, e o que vale
   // guardar é quantas vezes o aluno fechou uma rodada, não quais números saíram.
   const [rodada, setRodada] = useState(() => gerarRodada())
@@ -183,9 +186,37 @@ export default function LabElasticidades({ abrirDesafio = 0 }) {
     setRespostas({})
   }
 
+  const missoes = [
+    {
+      id: 'elastica',
+      texto: 'Com a medida "Demanda", escolha um preço antes e um depois que deixem a demanda elástica.',
+      dica: 'Experimente preços altos nos dois controles, como R$ 40 e R$ 45.',
+      sintese: 'Elástica: a quantidade variou, em porcentagem, mais que o preço. Sem o sinal, o valor fica acima de 1.',
+    },
+    {
+      id: 'inelastica',
+      texto: 'Agora escolha preços que deixem a demanda inelástica.',
+      dica: 'Experimente preços baixos nos dois controles, como R$ 10 e R$ 12.',
+      sintese: 'Inelástica: a quantidade reagiu menos que o preço. Sem o sinal, o valor fica abaixo de 1. A mesma curva tem trechos elásticos e inelásticos.',
+    },
+    {
+      id: 'receita',
+      texto: 'Encontre um AUMENTO de preço que faça a receita cair.',
+      dica: 'Deixe o "Preço depois" maior que o "Preço antes", na faixa em que a demanda é elástica.',
+      sintese: 'Com demanda elástica, subir o preço derruba a receita: o que se perde em quantidade supera o ganho no preço.',
+    },
+    {
+      id: 'inferior',
+      texto: 'Mude a medida para "Renda", escolha um bem inferior e aumente a renda.',
+      dica: 'Clique em "Renda", depois no tipo "Inferior", e deixe a variação na renda positiva.',
+      sintese: 'Elasticidade-renda negativa: mais renda, menos consumo. Na renda, o sinal faz parte da resposta.',
+    },
+  ]
+  const missoesFeitas = useMissoes('elasticidades', mexeu ? missoesElasticidades({ medida, tipo, precoDe, precoPara, variacaoReceita, tipoRenda }) : [])
+
   const secaoOk = { previsao: previsao !== null,
     conceito: conceitoLido,
-    laboratorio: labVisitado,
+    laboratorio: missoesFeitas.length === missoes.length,
     desafio: rodadas > 0,
   }
 
@@ -212,13 +243,14 @@ export default function LabElasticidades({ abrirDesafio = 0 }) {
       onIr={irPara}
     />
 
-    {secao === 'previsao' && <Previsao tema="elasticidades" resposta={previsao} onResponder={setPrevisao} onContinuar={() => irPara('laboratorio')} />}
+    {secao === 'previsao' && <Previsao tema="elasticidades" anotar resposta={previsao} onResponder={setPrevisao} onContinuar={() => irPara('laboratorio')} />}
     {secao === 'conceito' && <Reflexao tema="elasticidades" resposta={previsao} />}
 
     {secao === 'conceito' && (
       <div className="conceito">
         <p className="eyebrow">5.3 · ENTENDER</p>
         <h3>Não basta saber a direção; falta a intensidade</h3>
+        <p className="ponte-missoes">Nas missões, você deixou a mesma demanda elástica e inelástica só mudando a faixa de preço, fez um aumento de preço derrubar a receita e viu uma elasticidade-renda negativa. Os conceitos abaixo dão nome a cada uma dessas medidas.</p>
         <p>
           Demanda e oferta já dizem <b>para onde</b> a quantidade se move quando o preço muda.
           A <b>elasticidade</b> diz <b>o quanto</b>: é a variação percentual da quantidade para
@@ -257,8 +289,12 @@ export default function LabElasticidades({ abrirDesafio = 0 }) {
       </div>
     )}
 
-    <div className={secao === 'laboratorio' || secao === 'desafio' ? 'secao' : 'secao oculto'}>
-      <div className="lab-shell" onChange={() => setLabVisitado(true)} onClick={e => { if (e.target.closest('button')) setLabVisitado(true) }}>
+    <div className={secao === 'laboratorio' ? 'secao' : secao === 'desafio' ? 'secao modo-aplicar' : 'secao oculto'}>
+      {secao === 'laboratorio' && <>
+        <Aposta tema="elasticidades" resposta={previsao} />
+        <Missoes missoes={missoes} feitas={missoesFeitas} aoConcluirTodas={<p className="metas-fim">✦ Missões cumpridas. Explore os controles à vontade ou siga para entender o resultado.</p>} />
+      </>}
+      <div className="lab-shell" onChange={() => setMexeu(true)} onClick={e => { if (e.target.closest('button')) setMexeu(true) }}>
         <aside className="controls-panel">
           <div className="panel-title"><span className="pulse"></span> DUAS OBSERVAÇÕES DO MERCADO</div>
 

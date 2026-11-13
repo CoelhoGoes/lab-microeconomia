@@ -3,8 +3,10 @@ import Slider from '../shared/Slider.jsx'
 import { num } from '../shared/formato.js'
 import { usePersistido } from '../shared/persistencia.js'
 import SecoesDoModulo from '../shared/SecoesDoModulo.jsx'
-import Previsao, { Reflexao } from '../shared/Previsao.jsx'
-import { criarSecoes, PassoEntender } from '../shared/Jornada.jsx'
+import Previsao, { Reflexao, Aposta } from '../shared/Previsao.jsx'
+import Missoes, { useMissoes } from '../shared/Missoes.jsx'
+import { criarSecoes, PassoEntender, Fechamento } from '../shared/Jornada.jsx'
+import { missoesConsumidor } from './missoes.js'
 import {
   equilibrioConsumidor, respeitaDecrescente, gerarRodada,
 } from './utilidade.js'
@@ -27,7 +29,9 @@ export default function LabConsumidor({ abrirDesafio = 0 }) {
   const [secao, setSecao] = useState('previsao')
   const [previsao, setPrevisao] = usePersistido('microlab:consumidor:previsao', null)
   const [conceitoLido, setConceitoLido] = usePersistido('microlab:consumidor:conceito', false)
-  const [labVisitado, setLabVisitado] = usePersistido('microlab:consumidor:experimento-v2', false)
+  // As missões só contam depois que o aluno mexe: o cenário inicial não cumpre nada sozinho.
+  const [mexeu, setMexeu] = useState(false)
+  const [respostaExcedente, setRespostaExcedente] = useState(null)
   const [rodadas, setRodadas] = usePersistido('microlab:consumidor:rodadas', 0)
   const [rodada, setRodada] = useState(() => gerarRodada())
   const [respostas, setRespostas] = useState({})
@@ -55,7 +59,48 @@ export default function LabConsumidor({ abrirDesafio = 0 }) {
     setUtilidades(atuais => atuais.map((u, j) => (j === i ? limpo : u)))
   }
 
-  const secaoOk = { previsao: previsao !== null, conceito: conceitoLido, laboratorio: labVisitado, desafio: rodadas > 0 }
+  const missoes = [
+    {
+      id: 'barato',
+      texto: 'Baixe o preço de mercado até Marina comprar 5 unidades ou mais.',
+      dica: 'Use o controle "Preço de mercado" no fim do painel da tabela.',
+      sintese: 'Com o preço menor, mais unidades passam a valer a compra: ela compra enquanto a reserva de cada unidade cobre o preço. É daqui que vem a curva de demanda, que desce.',
+    },
+    {
+      id: 'caro',
+      texto: 'Agora suba o preço até ela comprar só 1 unidade.',
+      dica: 'Leve o preço para perto da reserva da primeira unidade, R$ 18.',
+      sintese: 'Com preço alto, só a primeira unidade, a de maior satisfação, ainda compensa. Mudar o preço do próprio bem move a decisão ao longo da demanda.',
+    },
+    {
+      id: 'excedente',
+      texto: 'Com preço de R$ 9, a 1ª unidade vale R$ 18 para Marina. Quanto ela ganha nessa unidade?',
+      dica: 'Compare o que ela aceitaria pagar com o que de fato paga.',
+      sintese: 'Esse ganho, reserva menos preço, é o excedente do consumidor. Somado nas unidades compradas, é a métrica destacada no painel.',
+      conteudo: <>
+        <div className="caso-opcoes">
+          {[9, 18, 27].map(v => (
+            <button key={v} className={`caso-op ${respostaExcedente === v ? 'escolhida' : ''}`}
+                    onClick={() => { setMexeu(true); setRespostaExcedente(v) }}>R$ {v}</button>
+          ))}
+        </div>
+        {respostaExcedente !== null && respostaExcedente !== 9 && (
+          <p className="caso-feedback">
+            ✗ {respostaExcedente === 18 ? 'R$ 18 é o quanto ela aceitaria pagar, não o que ganha.' : 'Ela não soma reserva e preço: paga R$ 9 por algo que vale R$ 18 para ela.'} O ganho é a diferença: 18 − 9.
+          </p>
+        )}
+      </>,
+    },
+    {
+      id: 'decrescente',
+      texto: 'Edite a tabela para a 2ª unidade valer mais que a 1ª.',
+      dica: 'Digite na coluna "U. marginal" da unidade 2 um valor acima do da unidade 1.',
+      sintese: 'O laboratório avisa que isso contraria a lei da utilidade marginal decrescente. Na prática, cada unidade a mais satisfaz menos, e é por isso que a demanda desce.',
+    },
+  ]
+  const missoesFeitas = useMissoes('consumidor', mexeu ? missoesConsumidor({ utilidades, preco: precoMercado, respostaExcedente }) : [])
+
+  const secaoOk = { previsao: previsao !== null, conceito: conceitoLido, laboratorio: missoesFeitas.length === missoes.length, desafio: rodadas > 0 }
 
   const irPara = id => {
     setSecao(id)
@@ -80,13 +125,14 @@ export default function LabConsumidor({ abrirDesafio = 0 }) {
       onIr={irPara}
     />
 
-    {secao === 'previsao' && <Previsao tema="consumidor" resposta={previsao} onResponder={setPrevisao} onContinuar={() => irPara('laboratorio')} />}
+    {secao === 'previsao' && <Previsao tema="consumidor" anotar resposta={previsao} onResponder={setPrevisao} onContinuar={() => irPara('laboratorio')} />}
     {secao === 'conceito' && <Reflexao tema="consumidor" resposta={previsao} />}
 
     {secao === 'conceito' && (
       <div className="conceito">
         <p className="eyebrow">2.3 · ENTENDER</p>
         <h3>De onde vem a curva de demanda</h3>
+        <p className="ponte-missoes">Nas missões, você baixou e subiu o preço e viu Marina comprar mais ou menos unidades, calculou o ganho em uma unidade e montou uma tabela que contraria a teoria. É isso que os conceitos abaixo explicam.</p>
         <p>
           A <b>utilidade marginal</b> é a satisfação que cada unidade adicional acrescenta. Ela
           <b> decresce</b>: o primeiro copo d'água de quem está com sede vale muito; o quinto,
@@ -108,8 +154,12 @@ export default function LabConsumidor({ abrirDesafio = 0 }) {
       </div>
     )}
 
-    <div className={secao === 'laboratorio' || secao === 'desafio' ? 'secao' : 'secao oculto'}>
-      <div className="lab-shell" onChange={() => setLabVisitado(true)} onClick={e => { if (e.target.closest('button')) setLabVisitado(true) }}>
+    <div className={secao === 'laboratorio' ? 'secao' : secao === 'desafio' ? 'secao modo-aplicar' : 'secao oculto'}>
+      {secao === 'laboratorio' && <>
+        <Aposta tema="consumidor" resposta={previsao} />
+        <Missoes missoes={missoes} feitas={missoesFeitas} aoConcluirTodas={<p className="metas-fim">✦ Missões cumpridas. Explore os controles à vontade ou siga para entender o resultado.</p>} />
+      </>}
+      <div className="lab-shell" onChange={() => setMexeu(true)} onClick={e => { if (e.target.closest('button')) setMexeu(true) }}>
         <aside className="controls-panel">
           <div className="panel-title"><span className="pulse"></span> TABELA DE UTILIDADE</div>
           <p className="tabela-ajuda">
