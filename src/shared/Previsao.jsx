@@ -33,6 +33,16 @@ export default function Previsao({ tema, resposta, onResponder, onContinuar, ano
   </section>
 }
 
+// Cartão que mantém a hipótese do aluno à vista durante as missões.
+export function Aposta({ tema, resposta }) {
+  const p = PREVISOES[tema]
+  return <p className="aposta">
+    {resposta === null
+      ? 'Você não registrou uma previsão. Tudo bem: as missões mostram o caminho.'
+      : <>Sua aposta para “{p.pergunta}”: <b>{p.opcoes[resposta]}</b>. As missões vão testar isso.</>}
+  </p>
+}
+
 export function Reflexao({ tema, resposta }) {
   const p = PREVISOES[tema]
   return <aside className="reflexao" aria-label="Comparação com sua previsão">

@@ -1,4 +1,17 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
+import { usePersistido } from './persistencia.js'
+
+// Missões cumpridas ficam cumpridas: o aluno segue mexendo nos controles depois,
+// e desfazer o estado não deve apagar o que ele já descobriu.
+// `cumpridas`: ids cujo predicado vale AGORA, calculados pelo tema.
+export function useMissoes(tema, cumpridas) {
+  const [feitas, setFeitas] = usePersistido(`microlab:${tema}:missoes`, [])
+  const novas = cumpridas.filter(id => !feitas.includes(id))
+  useEffect(() => {
+    if (novas.length) setFeitas(atuais => [...new Set([...atuais, ...novas])])
+  }, [novas.join(), setFeitas])
+  return feitas
+}
 
 // Missões guiadas da etapa Experimentar. Em vez de "mexa à vontade", o aluno
 // recebe tarefas curtas; cada uma é reconhecida por um predicado sobre o estado

@@ -2009,4 +2009,8 @@ footer b {
 .fechamento { margin-top: 22px; padding: 18px 20px; border-left: 3px solid var(--teal); background: color-mix(in srgb, var(--mint) 35%, var(--paper)); font-size: 13px; line-height: 1.8; }
 .fechamento p { margin: 0 0 8px; }
 .fechamento a { color: var(--teal); font-weight: 700; }
-@media (max-width: 560px) { .missao-fpp { grid-template-columns: 1fr; } .metas { padding: 20px 16px; } }
+@media (max-width: 560px) { .missao-fpp { grid-template-columns: 1fr; } .metas { padding: 20px 16px; } .aposta { margin-left: 5vw; margin-right: 5vw; } }
+/* Aplicar sem o laboratório à vista (temas 2, 3, 5 e 6): o desafio fica dentro da
+   mesma seção, então o modo esconde só o laboratório e a leitura do cenário. */
+.modo-aplicar > .lab-shell, .modo-aplicar > .insight { display: none; }
+.ponte-missoes { font-size: 14px; line-height: 1.8; padding: 12px 16px; border-left: 3px solid var(--coral); background: var(--cream); }

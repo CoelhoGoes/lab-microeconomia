@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { usePersistido } from './persistencia.js'
 import SecoesDoModulo from './SecoesDoModulo.jsx'
-import Previsao, { Reflexao } from './Previsao.jsx'
+import Previsao, { Reflexao, Aposta } from './Previsao.jsx'
+import Missoes, { useMissoes } from './Missoes.jsx'
 import { respostaNumerica } from '../labs/firma.js'
 
 export const criarSecoes = numero => [
@@ -16,24 +17,45 @@ export function PassoEntender({ onClick }) {
     <button className="button primary" onClick={onClick}>Entender o resultado →</button></div>
 }
 
-export default function Jornada({ tema, numero, titulo, experimento, explicacao, questoes, fonte, abrirDesafio = 0 }) {
+// Cartão de fechamento do tema: o que o aluno leva e a ponte para o próximo.
+// proximo: { id, titulo } do tema seguinte, ou null no último tema.
+export function Fechamento({ texto, proximo }) {
+  return <aside className="fechamento" aria-label="Fechamento do tema">
+    <p className="eyebrow">O QUE VOCÊ LEVA DESTE TEMA</p>
+    <p>{texto}</p>
+    <p>{proximo
+      ? <a href={`#${proximo.id}`}>Ir para {proximo.titulo} →</a>
+      : <a href="#mapa">Voltar ao mapa dos temas ↑</a>}</p>
+  </aside>
+}
+
+// missoes/cumpridas: missões guiadas do Experimentar (ver shared/Missoes.jsx).
+// Com missões, a etapa só conta como concluída quando todas forem cumpridas.
+// fechamento: { texto, proximo } mostrado depois de concluir a aplicação.
+export default function Jornada({ tema, numero, titulo, experimento, explicacao, questoes, fonte, abrirDesafio = 0, missoes = null, cumpridas = [], fechamento = null }) {
   const [secao, setSecao] = useState('previsao')
   const [previsao, setPrevisao] = usePersistido(`microlab:${tema}:previsao`, null)
   const [interagiu, setInteragiu] = usePersistido(`microlab:${tema}:experimento-v2`, false)
   const [entendeu, setEntendeu] = usePersistido(`microlab:${tema}:conceito`, false)
   const [aplicou, setAplicou] = usePersistido(`microlab:${tema}:aplicou`, false)
+  const feitas = useMissoes(tema, cumpridas)
+  const experimentou = missoes ? feitas.length === missoes.length : interagiu
   useEffect(() => { if (abrirDesafio > 0) setSecao('desafio') }, [abrirDesafio])
   return <>
     <SecoesDoModulo rotulo={`MÓDULO ${numero} · ${titulo.toUpperCase()}`} secoes={criarSecoes(numero)} ativa={secao}
-      concluidas={{ previsao: previsao !== null, laboratorio: interagiu, conceito: entendeu, desafio: aplicou }} onIr={setSecao} />
-    {secao === 'previsao' && <Previsao tema={tema} resposta={previsao} onResponder={setPrevisao} onContinuar={() => setSecao('laboratorio')} />}
+      concluidas={{ previsao: previsao !== null, laboratorio: experimentou, conceito: entendeu, desafio: aplicou }} onIr={setSecao} />
+    {secao === 'previsao' && <Previsao tema={tema} anotar={!!missoes} resposta={previsao} onResponder={setPrevisao} onContinuar={() => setSecao('laboratorio')} />}
     <div className={secao === 'laboratorio' ? 'secao' : 'secao oculto'}>
+      {missoes && <><Aposta tema={tema} resposta={previsao} />
+        <Missoes missoes={missoes} feitas={feitas}
+          aoConcluirTodas={<p className="metas-fim">✦ Missões cumpridas. Explore os controles à vontade ou siga para entender o resultado.</p>} /></>}
       {experimento(() => setInteragiu(true))}
       <PassoEntender onClick={() => setSecao('conceito')} />
     </div>
     {secao === 'conceito' && <section className="conceito"><Reflexao tema={tema} resposta={previsao} />{explicacao}
       <button className="button primary" onClick={() => { setEntendeu(true); setSecao('desafio') }}>Entendi, aplicar em outro caso →</button></section>}
     {secao === 'desafio' && <Atividade id={tema} questoes={questoes} onCompleta={() => setAplicou(true)} />}
+    {secao === 'desafio' && aplicou && fechamento && <Fechamento {...fechamento} />}
     <p className="fonte-aula">{fonte}</p>
   </>
 }

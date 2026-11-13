@@ -2,9 +2,9 @@ import React, { useEffect, useState } from 'react'
 import { num } from '../shared/formato.js'
 import { usePersistido } from '../shared/persistencia.js'
 import SecoesDoModulo from '../shared/SecoesDoModulo.jsx'
-import Previsao, { Reflexao, PREVISOES } from '../shared/Previsao.jsx'
-import Missoes from '../shared/Missoes.jsx'
-import { criarSecoes, PassoEntender } from '../shared/Jornada.jsx'
+import Previsao, { Reflexao, Aposta } from '../shared/Previsao.jsx'
+import Missoes, { useMissoes } from '../shared/Missoes.jsx'
+import { criarSecoes, PassoEntender, Fechamento } from '../shared/Jornada.jsx'
 import {
   avaliar, custoOportunidade, diagnosticar, gerarRodada,
   missoesCumpridas, melhorAbandonadaDaLoja, PRODUTORES, custoCafeEmCacau,
@@ -128,20 +128,13 @@ export default function LabOportunidade({ abrirDesafio = 0 }) {
   const [secao, setSecao] = useState('previsao')
   const [previsao, setPrevisao] = usePersistido('microlab:oportunidade:previsao', null)
   const [conceitoLido, setConceitoLido] = usePersistido('microlab:oportunidade:conceito', false)
-  // Missões cumpridas ficam cumpridas: o aluno segue mexendo nos controles depois.
-  const [missoesFeitas, setMissoesFeitas] = usePersistido('microlab:oportunidade:missoes', [])
   const [rodadas, setRodadas] = usePersistido('microlab:oportunidade:rodadas', 0)
   const [rodada, setRodada] = useState(() => gerarRodada())
   const [respostas, setRespostas] = useState({})
   const [conferidas, setConferidas] = useState({})
 
   const r = avaliar(alternativas, escolhidaId)
-  const cumpridasAgora = missoesCumpridas({ alternativas, escolhidaId, sacrificio, custosFpp })
-  const novas = cumpridasAgora.filter(id => !missoesFeitas.includes(id))
-
-  useEffect(() => {
-    if (novas.length) setMissoesFeitas(feitas => [...new Set([...feitas, ...novas])])
-  }, [novas.join(), setMissoesFeitas])
+  const missoesFeitas = useMissoes('oportunidade', missoesCumpridas({ alternativas, escolhidaId, sacrificio, custosFpp }))
 
   // Métricas aparecem só depois da missão que apresenta o conceito.
   const verCusto = missoesFeitas.includes('sacrificio')
@@ -255,11 +248,7 @@ export default function LabOportunidade({ abrirDesafio = 0 }) {
     )}
 
     <div className={secao === 'laboratorio' ? 'secao' : 'secao oculto'}>
-      <p className="aposta">
-        {previsao === null
-          ? 'Você não registrou uma previsão. Tudo bem: as missões mostram o caminho.'
-          : <>Sua aposta: ao abrir a loja, Ana abre mão de <b>{PREVISOES.oportunidade.opcoes[previsao]}</b>. As missões vão testar isso.</>}
-      </p>
+      <Aposta tema="oportunidade" resposta={previsao} />
 
       <Missoes
         missoes={missoes}
@@ -452,17 +441,10 @@ function Desafio({ rodada, respostas, setRespostas, conferidas, setConferidas, a
         <p className="metas-fim">✦ Rodada fechada. Sorteie outra para treinar com cenários novos.</p>
       )}
       {(completa || rodadas > 0) && (
-        <aside className="fechamento" aria-label="Fechamento do tema">
-          <p className="eyebrow">O QUE VOCÊ LEVA DESTE TEMA</p>
-          <p>
-            Toda escolha tem um custo: o valor da melhor alternativa deixada de lado, mesmo quando
-            nenhum dinheiro sai do bolso. Uma escolha só vale a pena se render mais que esse custo.
-          </p>
-          <p>
-            No tema 2 o raciocínio volta: cada real gasto com café é um real a menos para outra
-            coisa. <a href="#consumidor">Ir para Teoria do consumidor →</a>
-          </p>
-        </aside>
+        <Fechamento
+          texto="Toda escolha tem um custo: o valor da melhor alternativa deixada de lado, mesmo quando nenhum dinheiro sai do bolso. Uma escolha só vale a pena se render mais que esse custo. No tema 2 o raciocínio volta: cada real gasto com café é um real a menos para outra coisa."
+          proximo={{ id: 'consumidor', titulo: 'Teoria do consumidor' }}
+        />
       )}
       <div className="jornada-acoes">
         <button className="button primary" onClick={() => setConferidas({ ...respostas })}>Conferir respostas →</button>
