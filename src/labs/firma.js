@@ -69,8 +69,17 @@ export function projetoArriscado({ custo, chance, receita, subsidio }) {
   return { esperado, privado: esperado - custo + subsidio, publico: subsidio }
 }
 
+// Lê o número como o aluno costuma escrever: "380", "380,00" ou "R$ 380".
+// Devolve null quando não há número legível.
+export function lerNumero(valor) {
+  if (valor === undefined || valor === null) return null
+  const texto = String(valor).replace(/R\$/i, '').trim()
+  if (texto === '') return null
+  const numero = Number(texto.replace(',', '.'))
+  return Number.isFinite(numero) ? numero : null
+}
+
 export function respostaNumerica(valor, esperado, tolerancia = 0.02) {
-  if (valor === undefined || valor === null || String(valor).trim() === '') return false
-  const numero = Number(String(valor).trim().replace(',', '.'))
-  return Number.isFinite(numero) && Math.abs(numero - esperado) <= tolerancia
+  const numero = lerNumero(valor)
+  return numero !== null && Math.abs(numero - esperado) <= tolerancia
 }
