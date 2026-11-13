@@ -1990,3 +1990,23 @@ footer b {
 .complemento .text-button { color: var(--teal); }
 .secoes { scroll-margin-top: 95px; }
 @media (max-width: 560px) { .secao-num { display: none; } .secao-item { font-size: 11px; } }
+
+/* Missões guiadas (shared/Missoes.jsx): reaproveitam .metas/.meta do tema 4 e
+   só acrescentam o destaque da próxima missão, a síntese e a dica. */
+.missoes { margin-bottom: 1px; }
+.meta.atual { border-left-color: var(--coral); background: var(--paper); }
+.meta > div { flex: 1; min-width: 0; }
+.missao-proxima { display: inline-block; font: 9px 'DM Mono', monospace; letter-spacing: .1em; color: var(--coral); margin-bottom: 4px; }
+.missao-sintese { font-size: 13px; line-height: 1.7; margin: 6px 0 0; color: var(--ink); }
+.missao-dica { font-size: 11px; margin-top: 8px; color: var(--teal); }
+.meta .caso-opcoes { margin-top: 10px; }
+.missao-fpp { display: grid; grid-template-columns: minmax(0, 320px) 1fr; gap: 18px; align-items: center; margin-top: 10px; }
+.missao-fpp .caso-opcoes { margin-top: 6px; }
+.missao-fpp p { font-size: 12px; margin: 10px 0 0; }
+.missao-fpp p b { display: inline; }
+.aposta { font-size: 13px; line-height: 1.7; padding: 14px 18px; margin: 0 auto 1px; max-width: 1120px; background: var(--cream); color: var(--ink); border-left: 3px solid var(--coral); }
+.anotado { font-size: 13px; line-height: 1.7; color: var(--teal); margin: 0 0 14px; }
+.fechamento { margin-top: 22px; padding: 18px 20px; border-left: 3px solid var(--teal); background: color-mix(in srgb, var(--mint) 35%, var(--paper)); font-size: 13px; line-height: 1.8; }
+.fechamento p { margin: 0 0 8px; }
+.fechamento a { color: var(--teal); font-weight: 700; }
+@media (max-width: 560px) { .missao-fpp { grid-template-columns: 1fr; } .metas { padding: 20px 16px; } }

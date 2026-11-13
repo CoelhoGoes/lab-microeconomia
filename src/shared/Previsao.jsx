@@ -13,7 +13,9 @@ export const PREVISOES = {
   custos: { caso: 'Uma empresa vende muito, mas também tem despesas fixas e variáveis.', pergunta: 'Ter faturamento alto garante lucro?', opcoes: ['Sim, faturamento e lucro são iguais', 'Não: é preciso comparar receita e custo total', 'Sim, se vender todas as unidades'], correta: 1, explicacao: 'Lucro é receita total menos custo total. O ponto de equilíbrio da firma ocorre quando os dois se igualam.' },
 }
 
-export default function Previsao({ tema, resposta, onResponder, onContinuar }) {
+// anotar: confirma a previsão assim que o aluno responde e anuncia o teste no
+// laboratório, para a hipótese não ficar sem retorno até a etapa Entender.
+export default function Previsao({ tema, resposta, onResponder, onContinuar, anotar = false }) {
   const p = PREVISOES[tema]
   return <section className="previsao-card">
     <p className="eyebrow">01 · ANTES DE MEXER NOS CONTROLES</p>
@@ -24,6 +26,7 @@ export default function Previsao({ tema, resposta, onResponder, onContinuar }) {
         <input type="radio" name={`previsao-${tema}`} checked={resposta === i} onChange={() => onResponder(i)} />{opcao}
       </label>)}
     </fieldset>
+    {anotar && resposta !== null && <p className="anotado" role="status">Anotado: você apostou em <b>{p.opcoes[resposta]}</b>. Vamos testar essa aposta no laboratório.</p>}
     <p className="tabela-ajuda">Sua previsão não vale nota. Você poderá compará-la com o resultado na etapa Entender.</p>
     <div className="jornada-acoes"><button className="button primary" disabled={resposta === null} onClick={onContinuar}>Testar minha previsão →</button>
       <button className="text-button" onClick={onContinuar}>Explorar livremente →</button></div>
