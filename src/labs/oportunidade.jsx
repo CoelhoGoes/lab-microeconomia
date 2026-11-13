@@ -3,7 +3,7 @@ import { num } from '../shared/formato.js'
 import { usePersistido } from '../shared/persistencia.js'
 import SecoesDoModulo from '../shared/SecoesDoModulo.jsx'
 import Previsao, { Reflexao, Aposta } from '../shared/Previsao.jsx'
-import Missoes, { useMissoes } from '../shared/Missoes.jsx'
+import Missoes, { useMissoes, revelacao, Oculta } from '../shared/Missoes.jsx'
 import { criarSecoes, PassoEntender, Fechamento } from '../shared/Jornada.jsx'
 import {
   avaliar, custoOportunidade, diagnosticar, gerarRodada,
@@ -136,9 +136,6 @@ export default function LabOportunidade({ abrirDesafio = 0 }) {
   const r = avaliar(alternativas, escolhidaId)
   const missoesFeitas = useMissoes('oportunidade', missoesCumpridas({ alternativas, escolhidaId, sacrificio, custosFpp }))
 
-  // Métricas aparecem só depois da missão que apresenta o conceito.
-  const verCusto = missoesFeitas.includes('sacrificio')
-  const verGanho = missoesFeitas.includes('empate')
 
   const acertos = rodada.filter(caso =>
     respostaNumerica(conferidas[caso.id], custoOportunidade(caso.alternativas, caso.escolhidaId), 0)).length
@@ -188,6 +185,11 @@ export default function LabOportunidade({ abrirDesafio = 0 }) {
     },
   ]
   const labConcluido = missoesFeitas.length === missoes.length
+  // Métricas aparecem só depois da missão que apresenta o conceito: aqui elas
+  // entregariam a resposta da própria missão.
+  const rev = revelacao(missoes, missoesFeitas)
+  const verCusto = rev('sacrificio').visivel
+  const verGanho = rev('empate').visivel
 
   const secaoOk = { previsao: previsao !== null, conceito: conceitoLido, laboratorio: labConcluido, desafio: rodadas > 0 }
 
@@ -328,11 +330,11 @@ export default function LabOportunidade({ abrirDesafio = 0 }) {
             </div>
             <div>
               <span>CUSTO DE OPORTUNIDADE</span>
-              <strong>{verCusto ? (r ? `R$ ${num(r.custo)}` : '—') : <small>aparece na missão 2</small>}</strong>
+              <strong><Oculta {...rev('sacrificio')}>{r ? `R$ ${num(r.custo)}` : '—'}</Oculta></strong>
             </div>
             <div className="highlight">
               <span>GANHO ECONÔMICO</span>
-              <strong>{verGanho ? (r ? `R$ ${num(r.ganhoLiquido)}` : '—') : <small>aparece na missão 3</small>}</strong>
+              <strong><Oculta {...rev('empate')}>{r ? `R$ ${num(r.ganhoLiquido)}` : '—'}</Oculta></strong>
             </div>
           </div>
         </div>

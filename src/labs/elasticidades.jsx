@@ -4,7 +4,7 @@ import { num } from '../shared/formato.js'
 import { usePersistido } from '../shared/persistencia.js'
 import SecoesDoModulo from '../shared/SecoesDoModulo.jsx'
 import Previsao, { Reflexao, Aposta } from '../shared/Previsao.jsx'
-import Missoes, { useMissoes } from '../shared/Missoes.jsx'
+import Missoes, { useMissoes, revelacao, Oculta } from '../shared/Missoes.jsx'
 import { criarSecoes, PassoEntender, Fechamento } from '../shared/Jornada.jsx'
 import { missoesElasticidades } from './missoes.js'
 import {
@@ -214,6 +214,13 @@ export default function LabElasticidades({ abrirDesafio = 0 }) {
   ]
   const missoesFeitas = useMissoes('elasticidades', mexeu ? missoesElasticidades({ medida, tipo, precoDe, precoPara, variacaoReceita, tipoRenda }) : [])
 
+  const rev = revelacao(missoes, missoesFeitas)
+  // Métrica → missão que a apresenta. naVez: o aluno precisa dela para cumprir a missão.
+  const REVELA = {
+    'RECEITA ANTES': rev('receita', { naVez: true }),
+    'RECEITA DEPOIS': rev('receita', { naVez: true }),
+    'ELASTICIDADE-RENDA': rev('inferior', { naVez: true }),
+  }
   const secaoOk = { previsao: previsao !== null,
     conceito: conceitoLido,
     laboratorio: missoesFeitas.length === missoes.length,
@@ -386,7 +393,7 @@ export default function LabElasticidades({ abrirDesafio = 0 }) {
             {vista.metricas.map(m => (
               <div key={m.rotulo} className={m.destaque ? 'highlight' : undefined}>
                 <span>{m.rotulo}</span>
-                <strong>{m.valor}{m.unidade && <small> {m.unidade}</small>}</strong>
+                <strong><Oculta {...(REVELA[m.rotulo] ?? { visivel: true })}>{m.valor}{m.unidade && <small> {m.unidade}</small>}</Oculta></strong>
               </div>
             ))}
           </div>

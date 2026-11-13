@@ -26,6 +26,23 @@ export function useMissoes(tema, cumpridas) {
 //   conteudo — controle próprio da missão (pergunta, gráfico), mostrado enquanto
 //              ela não foi cumprida.
 // feitas:  ids das missões cumpridas.
+// Revelação de métricas: uma métrica cujo conceito é apresentado por uma missão
+// fica oculta até lá. Por padrão aparece quando a missão é CUMPRIDA (a métrica
+// entregaria a resposta). Com { naVez: true }, aparece já quando a missão vira a
+// próxima, para as métricas que o aluno precisa olhar para cumpri-la.
+// Uso: const rev = revelacao(missoes, feitas); <Oculta {...rev('receita', { naVez: true })}>…</Oculta>
+export function revelacao(missoes, feitas) {
+  const proxima = missoes.find(m => !feitas.includes(m.id))?.id
+  return (id, { naVez = false } = {}) => ({
+    visivel: feitas.includes(id) || (naVez && proxima === id),
+    numero: missoes.findIndex(m => m.id === id) + 1,
+  })
+}
+
+export function Oculta({ visivel, numero, children }) {
+  return visivel ? children : <small className="metrica-oculta">aparece na missão {numero}</small>
+}
+
 export default function Missoes({ missoes, feitas, aoConcluirTodas }) {
   const [dicas, setDicas] = useState({})
   const [abertas, setAbertas] = useState({})

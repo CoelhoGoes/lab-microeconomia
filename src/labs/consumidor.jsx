@@ -4,7 +4,7 @@ import { num } from '../shared/formato.js'
 import { usePersistido } from '../shared/persistencia.js'
 import SecoesDoModulo from '../shared/SecoesDoModulo.jsx'
 import Previsao, { Reflexao, Aposta } from '../shared/Previsao.jsx'
-import Missoes, { useMissoes } from '../shared/Missoes.jsx'
+import Missoes, { useMissoes, revelacao, Oculta } from '../shared/Missoes.jsx'
 import { criarSecoes, PassoEntender, Fechamento } from '../shared/Jornada.jsx'
 import { missoesConsumidor } from './missoes.js'
 import {
@@ -100,6 +100,7 @@ export default function LabConsumidor({ abrirDesafio = 0 }) {
   ]
   const missoesFeitas = useMissoes('consumidor', mexeu ? missoesConsumidor({ utilidades, preco: precoMercado, respostaExcedente }) : [])
 
+  const rev = revelacao(missoes, missoesFeitas)
   const secaoOk = { previsao: previsao !== null, conceito: conceitoLido, laboratorio: missoesFeitas.length === missoes.length, desafio: rodadas > 0 }
 
   const irPara = id => {
@@ -248,7 +249,7 @@ export default function LabConsumidor({ abrirDesafio = 0 }) {
             </div>
             <div className="highlight">
               <span>EXCEDENTE DO CONSUMIDOR</span>
-              <strong>R$ {num(e.excedente)}</strong>
+              <strong><Oculta {...rev('excedente')}>R$ {num(e.excedente)}</Oculta></strong>
             </div>
           </div>
         </div>

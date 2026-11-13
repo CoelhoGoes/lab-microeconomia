@@ -5,7 +5,7 @@ import { num } from '../shared/formato.js'
 import { usePersistido } from '../shared/persistencia.js'
 import SecoesDoModulo from '../shared/SecoesDoModulo.jsx'
 import Previsao, { Reflexao, Aposta } from '../shared/Previsao.jsx'
-import Missoes, { useMissoes } from '../shared/Missoes.jsx'
+import Missoes, { useMissoes, revelacao, Oculta } from '../shared/Missoes.jsx'
 import { criarSecoes, PassoEntender, Fechamento } from '../shared/Jornada.jsx'
 import { missoesEquilibrio } from './missoes.js'
 import { METAS } from './metas-equilibrio.js'
@@ -171,6 +171,7 @@ export default function LabEquilibrio({ abrirDesafio = 0 }) {
   ]
   const missoesFeitas = useMissoes('equilibrio', interagiu ? missoesEquilibrio({ tipo: mercado.tipo, ajusteConcluido, cenarioId }) : [])
 
+  const rev = revelacao(missoes, missoesFeitas)
   const secaoOk = { previsao: previsao !== null,
     conceito: conceitoLido,
     laboratorio: missoesFeitas.length === missoes.length,
@@ -310,7 +311,7 @@ export default function LabEquilibrio({ abrirDesafio = 0 }) {
           </div>
           <div className="highlight">
             <span>EQUILÍBRIO</span>
-            <strong>R$ {num(mercado.equilibrio.preco, 2)}<small> · {num(mercado.equilibrio.quantidade)} mil un.</small></strong>
+            <strong><Oculta {...rev('ajuste')}>R$ {num(mercado.equilibrio.preco, 2)}<small> · {num(mercado.equilibrio.quantidade)} mil un.</small></Oculta></strong>
           </div>
         </div>
       </div>

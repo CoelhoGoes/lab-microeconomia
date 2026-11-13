@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { usePersistido } from '../shared/persistencia.js'
 import SecoesDoModulo from '../shared/SecoesDoModulo.jsx'
 import Previsao, { Reflexao, Aposta } from '../shared/Previsao.jsx'
-import Missoes, { useMissoes } from '../shared/Missoes.jsx'
+import Missoes, { useMissoes, revelacao, Oculta } from '../shared/Missoes.jsx'
 import { criarSecoes, PassoEntender, Fechamento } from '../shared/Jornada.jsx'
 import { missoesEstruturas } from './missoes.js'
 import {
@@ -71,6 +71,7 @@ export default function LabEstruturas({ abrirDesafio = 0 }) {
   ]
   const missoesFeitas = useMissoes('estruturas', mexeu ? missoesEstruturas({ estrutura: chave }) : [])
 
+  const rev = revelacao(missoes, missoesFeitas)
   const secaoOk = { previsao: previsao !== null, conceito: conceitoLido, laboratorio: missoesFeitas.length === missoes.length, desafio: rodadas > 0 }
 
   const irPara = id => {
@@ -200,7 +201,7 @@ export default function LabEstruturas({ abrirDesafio = 0 }) {
               <b>{estrutura ? 'Poder sobre o preço' : 'Sem nome nesta disciplina'}</b>
               <span>
                 {estrutura
-                  ? estrutura.poder
+                  ? <Oculta {...rev('monopolio')}>{estrutura.poder}</Oculta>
                   : 'Concentração dos dois lados ao mesmo tempo não é tratada na ementa.'}
               </span>
             </div>
@@ -251,7 +252,7 @@ export default function LabEstruturas({ abrirDesafio = 0 }) {
         <p>
           <b>Leitura do cenário:</b>{' '}
           {estrutura
-            ? `${ROTULO[vendedores].toLowerCase()} vendendo para ${ROTULO[compradores].toLowerCase()} compradores${vendedores === 'muitos' && compradores === 'muitos' ? (diferenciado ? ', com produto diferenciado,' : ', com produto idêntico,') : ''} configura ${estrutura.nome.toLowerCase()}. ${estrutura.poder}`
+            ? `${ROTULO[vendedores].toLowerCase()} vendendo para ${ROTULO[compradores].toLowerCase()} compradores${vendedores === 'muitos' && compradores === 'muitos' ? (diferenciado ? ', com produto diferenciado,' : ', com produto idêntico,') : ''} configura ${estrutura.nome.toLowerCase()}.${rev('monopolio').visivel ? ` ${estrutura.poder}` : ''}`
             : 'Concentração simultânea dos dois lados foge do recorte da disciplina — a ementa trata concentração de um lado por vez. Mova um dos controles para "muitos".'}
         </p>
       </div>

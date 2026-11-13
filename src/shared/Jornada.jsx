@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { usePersistido } from './persistencia.js'
 import SecoesDoModulo from './SecoesDoModulo.jsx'
 import Previsao, { Reflexao, Aposta } from './Previsao.jsx'
-import Missoes, { useMissoes } from './Missoes.jsx'
+import Missoes, { useMissoes, revelacao } from './Missoes.jsx'
 import { respostaNumerica } from '../labs/firma.js'
 
 export const criarSecoes = numero => [
@@ -30,6 +30,7 @@ export function Fechamento({ texto, proximo }) {
 }
 
 // missoes/cumpridas: missões guiadas do Experimentar (ver shared/Missoes.jsx).
+// experimento(interagir, rev) recebe também `rev`, para revelar métricas por missão.
 // Com missões, a etapa só conta como concluída quando todas forem cumpridas.
 // fechamento: { texto, proximo } mostrado depois de concluir a aplicação.
 export default function Jornada({ tema, numero, titulo, experimento, explicacao, questoes, fonte, abrirDesafio = 0, missoes = null, cumpridas = [], fechamento = null }) {
@@ -49,7 +50,7 @@ export default function Jornada({ tema, numero, titulo, experimento, explicacao,
       {missoes && <><Aposta tema={tema} resposta={previsao} />
         <Missoes missoes={missoes} feitas={feitas}
           aoConcluirTodas={<p className="metas-fim">✦ Missões cumpridas. Explore os controles à vontade ou siga para entender o resultado.</p>} /></>}
-      {experimento(() => setInteragiu(true))}
+      {experimento(() => setInteragiu(true), revelacao(missoes ?? [], feitas))}
       <PassoEntender onClick={() => setSecao('conceito')} />
     </div>
     {secao === 'conceito' && <section className="conceito"><Reflexao tema={tema} resposta={previsao} />{explicacao}
