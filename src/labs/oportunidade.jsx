@@ -2,25 +2,22 @@ import React, { useEffect, useState } from 'react'
 import { num } from '../shared/formato.js'
 import { usePersistido } from '../shared/persistencia.js'
 import SecoesDoModulo from '../shared/SecoesDoModulo.jsx'
-import Previsao, { Reflexao } from '../shared/Previsao.jsx'
+import Previsao, { Reflexao, PREVISOES } from '../shared/Previsao.jsx'
+import Missoes from '../shared/Missoes.jsx'
 import { criarSecoes, PassoEntender } from '../shared/Jornada.jsx'
-import { avaliar, custoOportunidade, diagnosticar, gerarRodada } from './oportunidade.js'
+import {
+  avaliar, custoOportunidade, diagnosticar, gerarRodada,
+  missoesCumpridas, melhorAbandonadaDaLoja, PRODUTORES, custoCafeEmCacau,
+} from './oportunidade.js'
 import { lerNumero, respostaNumerica } from './firma.js'
 
 const VALOR_MAX = 600
 
+// Lucro mensal de cada uso, já descontados os custos — o mesmo cenário da previsão.
 const ALTERNATIVAS_PADRAO = [
   { id: 'loja', uso: 'Abrir uma loja no terreno', valor: 420 },
-  { id: 'aluguel', uso: 'Alugar o terreno para um vizinho', valor: 380 },
-  { id: 'plantio', uso: 'Arrendar a área para plantio', valor: 240 },
-]
-
-// Dois produtores do exemplo do conceito. Cada um gasta todos os recursos num bem
-// ou noutro, e a fronteira é a reta entre esses dois máximos. O custo de 1 saca de
-// café é cacauMax / cafeMax sacas de cacau: 2 para Ana, 1 para Bruno.
-const PRODUTORES = [
-  { nome: 'Ana', cafeMax: 60, cacauMax: 120, cor: 'a' },
-  { nome: 'Bruno', cafeMax: 40, cacauMax: 40, cor: 'b' },
+  { id: 'aluguel', uso: 'Alugar para um vizinho', valor: 380 },
+  { id: 'horta', uso: 'Ceder a uma horta comunitária', valor: 240 },
 ]
 
 // Escala fixa da figura: café na horizontal até 70 sacas, cacau na vertical até 140.
@@ -56,21 +53,99 @@ function FronteiraDeProducao() {
   )
 }
 
+// Missão 2: o aluno aponta do que Ana abre mão ao ficar com a loja.
+function PerguntaSacrificio({ alternativas, resposta, onResponder }) {
+  const abandonadas = alternativas.filter(a => a.id !== 'loja')
+  const melhor = melhorAbandonadaDaLoja(alternativas)
+  const soma = abandonadas.reduce((s, a) => s + a.valor, 0)
+  return (
+    <>
+      <div className="caso-opcoes">
+        {abandonadas.map(a => (
+          <button key={a.id} className={`caso-op ${resposta === a.id ? 'escolhida' : ''}`} onClick={() => onResponder(a.id)}>
+            {a.uso} (R$ {a.valor})
+          </button>
+        ))}
+        <button className={`caso-op ${resposta === 'soma' ? 'escolhida' : ''}`} onClick={() => onResponder('soma')}>
+          Os dois juntos (R$ {soma})
+        </button>
+      </div>
+      {resposta && resposta !== melhor.id && (
+        <p className="caso-feedback">
+          ✗ {resposta === 'soma'
+            ? 'Os dois não aconteceriam juntos: o terreno só comporta um uso. No lugar da loja, Ana faria apenas uma das outras coisas.'
+            : 'Essa opção também fica de fora, mas rende menos. No lugar da loja, Ana escolheria a melhor das que sobraram.'}
+        </p>
+      )}
+    </>
+  )
+}
+
+// Missão 4: o custo de 1 saca de café em sacas de cacau, para cada produtor.
+const OPCOES_CUSTO_FPP = [0.5, 1, 2]
+
+function PerguntaFronteira({ custos, onResponder }) {
+  return (
+    <div className="missao-fpp">
+      <FronteiraDeProducao />
+      <div>
+        {PRODUTORES.map(p => {
+          const certo = custoCafeEmCacau(p)
+          const dado = custos[p.nome]
+          return (
+            <div key={p.nome}>
+              <p>Para <b>{p.nome}</b>, 1 saca de café custa quantas sacas de cacau?</p>
+              <div className="caso-opcoes">
+                {OPCOES_CUSTO_FPP.map(v => (
+                  <button key={v} className={`caso-op ${dado === v ? 'escolhida' : ''}`} onClick={() => onResponder(p.nome, v)}>
+                    {num(v, v % 1 ? 1 : 0)}
+                  </button>
+                ))}
+              </div>
+              {dado !== undefined && (
+                <p className="caso-feedback">
+                  {dado === certo ? '✓ ' : '✗ '}
+                  {p.nome} produz {p.cafeMax} sacas de café ou {p.cacauMax} de cacau: cada saca de café
+                  custa {p.cacauMax} ÷ {p.cafeMax} = {num(certo, 0)} {certo === 1 ? 'saca' : 'sacas'} de cacau.
+                </p>
+              )}
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 const SECOES = criarSecoes(1)
 
 export default function LabOportunidade({ abrirDesafio = 0 }) {
   const [alternativas, setAlternativas] = useState(ALTERNATIVAS_PADRAO)
-  const [escolhidaId, setEscolhidaId] = useState('loja')
+  // Começa sem escolha: a primeira missão é justamente escolher.
+  const [escolhidaId, setEscolhidaId] = useState(null)
+  const [sacrificio, setSacrificio] = useState(null)
+  const [custosFpp, setCustosFpp] = useState({})
   const [secao, setSecao] = useState('previsao')
   const [previsao, setPrevisao] = usePersistido('microlab:oportunidade:previsao', null)
   const [conceitoLido, setConceitoLido] = usePersistido('microlab:oportunidade:conceito', false)
-  const [labVisitado, setLabVisitado] = usePersistido('microlab:oportunidade:experimento-v2', false)
+  // Missões cumpridas ficam cumpridas: o aluno segue mexendo nos controles depois.
+  const [missoesFeitas, setMissoesFeitas] = usePersistido('microlab:oportunidade:missoes', [])
   const [rodadas, setRodadas] = usePersistido('microlab:oportunidade:rodadas', 0)
   const [rodada, setRodada] = useState(() => gerarRodada())
   const [respostas, setRespostas] = useState({})
   const [conferidas, setConferidas] = useState({})
 
   const r = avaliar(alternativas, escolhidaId)
+  const cumpridasAgora = missoesCumpridas({ alternativas, escolhidaId, sacrificio, custosFpp })
+  const novas = cumpridasAgora.filter(id => !missoesFeitas.includes(id))
+
+  useEffect(() => {
+    if (novas.length) setMissoesFeitas(feitas => [...new Set([...feitas, ...novas])])
+  }, [novas.join(), setMissoesFeitas])
+
+  // Métricas aparecem só depois da missão que apresenta o conceito.
+  const verCusto = missoesFeitas.includes('sacrificio')
+  const verGanho = missoesFeitas.includes('empate')
 
   const acertos = rodada.filter(caso =>
     respostaNumerica(conferidas[caso.id], custoOportunidade(caso.alternativas, caso.escolhidaId), 0)).length
@@ -91,7 +166,37 @@ export default function LabOportunidade({ abrirDesafio = 0 }) {
     setAlternativas(atuais => atuais.map(a => (a.id === id ? { ...a, valor: limpo } : a)))
   }
 
-  const secaoOk = { previsao: previsao !== null, conceito: conceitoLido, laboratorio: labVisitado, desafio: rodadas > 0 }
+  const missoes = [
+    {
+      id: 'escolher',
+      texto: 'No painel da decisão, escolha o uso que dá mais lucro para Ana.',
+      dica: 'Compare as barras e clique na alternativa de maior valor.',
+      sintese: 'Escolher é abrir mão: o terreno só comporta um uso, então ficar com a loja significa deixar o aluguel e a horta de lado.',
+    },
+    {
+      id: 'sacrificio',
+      texto: 'Ana ficou com a loja. Do que ela está abrindo mão de verdade?',
+      dica: 'No lugar da loja, Ana poderia ter feito UMA das outras coisas. Qual ela escolheria?',
+      sintese: `Esse é o custo de oportunidade: o valor da melhor alternativa abandonada (R$ ${melhorAbandonadaDaLoja(alternativas).valor}), não a soma delas. A métrica agora aparece no painel.`,
+      conteudo: <PerguntaSacrificio alternativas={alternativas} resposta={sacrificio} onResponder={setSacrificio} />,
+    },
+    {
+      id: 'empate',
+      texto: 'Aumente o lucro do aluguel até a loja deixar de valer a pena.',
+      dica: 'Arraste o controle "Alugar para um vizinho" até ele chegar ao lucro da loja.',
+      sintese: 'A loja ainda dá lucro no caixa, mas já não supera o aluguel. O ganho econômico (lucro da escolha menos o custo de oportunidade) chegou a zero ou ficou negativo. Ele agora aparece no painel.',
+    },
+    {
+      id: 'fronteira',
+      texto: 'O mesmo raciocínio vale na produção. Ana e Bruno dividem seus recursos entre café e cacau: quanto cacau cada um deixa de produzir para fazer 1 saca de café?',
+      dica: 'Divida o máximo de cacau pelo máximo de café: Ana faz 60 sacas de café ou 120 de cacau.',
+      sintese: 'Ana abre mão de 2 sacas de cacau por saca de café; Bruno, de só 1. Com custos diferentes, a troca compensa: se Bruno vende café a Ana por 1,5 saca de cacau, ele recebe mais do que o café lhe custa e ela paga menos do que custaria produzir.',
+      conteudo: <PerguntaFronteira custos={custosFpp} onResponder={(nome, v) => setCustosFpp(c => ({ ...c, [nome]: v }))} />,
+    },
+  ]
+  const labConcluido = missoesFeitas.length === missoes.length
+
+  const secaoOk = { previsao: previsao !== null, conceito: conceitoLido, laboratorio: labConcluido, desafio: rodadas > 0 }
 
   const irPara = id => {
     setSecao(id)
@@ -116,7 +221,7 @@ export default function LabOportunidade({ abrirDesafio = 0 }) {
       onIr={irPara}
     />
 
-    {secao === 'previsao' && <Previsao tema="oportunidade" resposta={previsao} onResponder={setPrevisao} onContinuar={() => irPara('laboratorio')} />}
+    {secao === 'previsao' && <Previsao tema="oportunidade" anotar resposta={previsao} onResponder={setPrevisao} onContinuar={() => irPara('laboratorio')} />}
     {secao === 'conceito' && <Reflexao tema="oportunidade" resposta={previsao} />}
 
     {secao === 'conceito' && (
@@ -124,38 +229,24 @@ export default function LabOportunidade({ abrirDesafio = 0 }) {
         <p className="eyebrow">1.3 · ENTENDER</p>
         <h3>O que a escolha custou não está na nota fiscal</h3>
         <p>
-          Recursos são limitados e desejos não. Toda escolha implica abrir mão de outra, e o
-          <b> custo de oportunidade</b> é o valor da <b>melhor alternativa abandonada</b> — não o
-          dinheiro que saiu do bolso.
+          Nas missões 1 e 2, o terreno só podia ir para um uso: ficar com a loja é abrir mão do
+          aluguel e da horta. O <b>custo de oportunidade</b> é o valor da <b>melhor alternativa
+          abandonada</b> — os R$ 380 do aluguel. Não é a soma das abandonadas, porque elas não
+          aconteceriam juntas. E não é zero só porque o terreno é de Ana: deixar de receber o
+          aluguel também custa.
         </p>
         <p>
-          Quem abre uma loja no próprio terreno não tem despesa de aluguel na contabilidade, mas
-          tem custo de oportunidade: o aluguel que receberia de outra pessoa. Ignorar isso faz um
-          negócio parecer lucrativo quando ele apenas <b>empata</b> com o que se deixou de lado.
+          Na missão 3, a loja continuava dando lucro no caixa, mas deixou de valer a pena quando o
+          aluguel a alcançou. O que decide é o <b>ganho econômico</b>: o lucro da escolha menos o
+          custo de oportunidade. Se ele for negativo, a decisão custou a diferença, mesmo com
+          dinheiro entrando.
         </p>
         <p>
-          Por isso o que importa é o <b>ganho líquido</b>: o retorno da escolha menos o da melhor
-          abandonada. Se der negativo, a decisão custou a diferença, mesmo que o caixa esteja
-          positivo. É o que explica por que "de graça" quase nunca é de graça.
-        </p>
-        <p>
-          Na produção, o mesmo raciocínio é um <b>trade-off</b>: o custo de oportunidade é o que se
-          deixou de produzir ao <b>transferir recursos de uma atividade para outra</b>. Ana, com os
-          recursos que tem, produz 60 sacas de café ou 120 de cacau, ou qualquer combinação entre
-          os dois. Cada saca de café custa a ela <b>2 sacas de cacau</b> — o custo medido em
-          unidades do outro bem.
-        </p>
-        <p>
-          Ligando as combinações possíveis, obtém-se a <b>fronteira de possibilidades de
-          produção</b>. Bruno, vizinho de Ana, produz 40 sacas de café ou 40 de cacau: para ele, uma
-          saca de café custa só 1 de cacau. Fronteiras diferentes, custos diferentes.
-        </p>
-        <FronteiraDeProducao />
-        <p>
-          É essa diferença que torna a <b>troca</b> vantajosa. Se Bruno vende café a Ana por 1,5
-          saca de cacau, ele recebe mais do que o café lhe custa (1), e ela paga menos do que
-          custaria produzi-lo (2). A troca compensa para os dois sempre que o preço combinado fica
-          entre os custos de oportunidade de cada um.
+          Na missão 4, o mesmo raciocínio apareceu na produção, como um <b>trade-off</b>: para Ana,
+          cada saca de café custa 2 de cacau; para Bruno, só 1. Ligando as combinações possíveis de
+          cada um, obtém-se a <b>fronteira de possibilidades de produção</b>. Como os custos
+          diferem, a <b>troca</b> compensa para os dois sempre que o preço combinado fica entre
+          esses custos.
         </p>
         <button className="button primary" onClick={() => { setConceitoLido(true); irPara('desafio') }}>
           {conceitoLido ? 'Ir para a aplicação' : 'Entendi, aplicar em outro caso'} <span>→</span>
@@ -163,13 +254,25 @@ export default function LabOportunidade({ abrirDesafio = 0 }) {
       </div>
     )}
 
-    <div className={secao === 'laboratorio' || secao === 'desafio' ? 'secao' : 'secao oculto'}>
-      <div className="lab-shell" onChange={() => setLabVisitado(true)} onClick={e => { if (e.target.closest('button')) setLabVisitado(true) }}>
+    <div className={secao === 'laboratorio' ? 'secao' : 'secao oculto'}>
+      <p className="aposta">
+        {previsao === null
+          ? 'Você não registrou uma previsão. Tudo bem: as missões mostram o caminho.'
+          : <>Sua aposta: ao abrir a loja, Ana abre mão de <b>{PREVISOES.oportunidade.opcoes[previsao]}</b>. As missões vão testar isso.</>}
+      </p>
+
+      <Missoes
+        missoes={missoes}
+        feitas={missoesFeitas}
+        aoConcluirTodas={<p className="metas-fim">✦ Missões cumpridas. Explore os controles à vontade ou siga para entender o resultado.</p>}
+      />
+
+      <div className="lab-shell">
         <aside className="controls-panel">
-          <div className="panel-title"><span className="pulse"></span> QUANTO CADA USO RENDE</div>
+          <div className="panel-title"><span className="pulse"></span> LUCRO MENSAL DE CADA USO</div>
           <p className="tabela-ajuda">
-            Um terreno, um uso só. Ajuste o retorno mensal de cada alternativa e veja a decisão
-            mudar de lado.
+            Um terreno, um uso só. Os valores são o lucro por mês, já descontados os custos. Use
+            estes controles quando uma missão pedir.
           </p>
           {alternativas.map(alt => (
             <div className="control" key={alt.id}>
@@ -183,7 +286,7 @@ export default function LabOportunidade({ abrirDesafio = 0 }) {
               />
             </div>
           ))}
-          <button className="reset" onClick={() => { setAlternativas(ALTERNATIVAS_PADRAO); setEscolhidaId('loja') }}>
+          <button className="reset" onClick={() => { setAlternativas(ALTERNATIVAS_PADRAO); setEscolhidaId(null) }}>
             ↺ Restaurar cenário
           </button>
         </aside>
@@ -194,24 +297,26 @@ export default function LabOportunidade({ abrirDesafio = 0 }) {
               <span className="market-label">DECISÃO</span>
               <h3>Escolha um uso para o terreno</h3>
             </div>
-            <div className={`market-status ${r.ganhoLiquido > 0 ? 'mint' : r.ganhoLiquido < 0 ? 'coral' : 'blue'}`}>
-              <b>
-                {r.ganhoLiquido > 0 ? 'Vale a pena' : r.ganhoLiquido < 0 ? 'Havia opção melhor' : 'Apenas empata'}
-              </b>
-              <span>
-                {r.ganhoLiquido > 0
-                  ? 'A escolha supera o que foi sacrificado.'
-                  : r.ganhoLiquido < 0
-                    ? 'A melhor abandonada rendia mais que esta.'
-                    : 'O retorno é igual ao da melhor abandonada.'}
-              </span>
-            </div>
+            {r && verGanho && (
+              <div className={`market-status ${r.ganhoLiquido > 0 ? 'mint' : r.ganhoLiquido < 0 ? 'coral' : 'blue'}`}>
+                <b>
+                  {r.ganhoLiquido > 0 ? 'Vale a pena' : r.ganhoLiquido < 0 ? 'Havia opção melhor' : 'Apenas empata'}
+                </b>
+                <span>
+                  {r.ganhoLiquido > 0
+                    ? 'A escolha supera o que foi sacrificado.'
+                    : r.ganhoLiquido < 0
+                      ? 'A melhor abandonada rendia mais que esta.'
+                      : 'O lucro é igual ao da melhor abandonada.'}
+                </span>
+              </div>
+            )}
           </div>
 
           <ul className="alternativas">
             {alternativas.map(alt => {
               const escolhida = alt.id === escolhidaId
-              const sacrificada = !escolhida && alt.valor === r.custo
+              const sacrificada = verCusto && r && !escolhida && alt.valor === r.custo
               return (
                 <li key={alt.id} className={escolhida ? 'alternativa escolhida' : sacrificada ? 'alternativa sacrificada' : 'alternativa'}>
                   <button onClick={() => setEscolhidaId(alt.id)} aria-pressed={escolhida}>
@@ -229,39 +334,42 @@ export default function LabOportunidade({ abrirDesafio = 0 }) {
 
           <div className="metric-row">
             <div>
-              <span>RETORNO DA ESCOLHA</span>
-              <strong>R$ {num(r.escolhida.valor)}</strong>
+              <span>LUCRO DA ESCOLHA</span>
+              <strong>{r ? `R$ ${num(r.escolhida.valor)}` : '—'}</strong>
             </div>
             <div>
               <span>CUSTO DE OPORTUNIDADE</span>
-              <strong>R$ {num(r.custo)}</strong>
+              <strong>{verCusto ? (r ? `R$ ${num(r.custo)}` : '—') : <small>aparece na missão 2</small>}</strong>
             </div>
             <div className="highlight">
-              <span>GANHO LÍQUIDO</span>
-              <strong>R$ {num(r.ganhoLiquido)}</strong>
+              <span>GANHO ECONÔMICO</span>
+              <strong>{verGanho ? (r ? `R$ ${num(r.ganhoLiquido)}` : '—') : <small>aparece na missão 3</small>}</strong>
             </div>
           </div>
         </div>
       </div>
 
-      {secao === 'laboratorio' && <PassoEntender onClick={() => irPara('conceito')} />}
-      {secao === 'desafio' && (
-        <Desafio rodada={rodada} respostas={respostas} setRespostas={setRespostas}
-                 conferidas={conferidas} setConferidas={setConferidas}
-                 acertos={acertos} rodadas={rodadas} completa={rodadaCompleta} onNovaRodada={novaRodada} />
-      )}
+      <PassoEntender onClick={() => irPara('conceito')} />
 
-      <div className="insight">
-        <span className="spark">✦</span>
-        <p>
-          <b>Leitura do cenário:</b> Escolhendo {r.escolhida.uso.toLowerCase()}, entram R${' '}
-          {num(r.escolhida.valor)} por mês. Mas abre-se mão de R$ {num(r.custo)} da melhor
-          alternativa, então o ganho de verdade é R$ {num(r.ganhoLiquido)}.
-          {r.ganhoLiquido < 0 && ' O caixa fica positivo, mas a decisão custou essa diferença.'}
-          {r.ganhoLiquido === 0 && ' Contabilmente entra dinheiro, mas economicamente é indiferente.'}
-        </p>
-      </div>
+      {r && verGanho && (
+        <div className="insight">
+          <span className="spark">✦</span>
+          <p>
+            <b>Leitura do cenário:</b> Escolhendo {r.escolhida.uso.toLowerCase()}, entram R${' '}
+            {num(r.escolhida.valor)} por mês. Mas abre-se mão de R$ {num(r.custo)} da melhor
+            alternativa, então o ganho econômico é R$ {num(r.ganhoLiquido)}.
+            {r.ganhoLiquido < 0 && ' O caixa fica positivo, mas a decisão custou essa diferença.'}
+            {r.ganhoLiquido === 0 && ' Contabilmente entra dinheiro, mas economicamente é indiferente.'}
+          </p>
+        </div>
+      )}
     </div>
+
+    {secao === 'desafio' && (
+      <Desafio rodada={rodada} respostas={respostas} setRespostas={setRespostas}
+               conferidas={conferidas} setConferidas={setConferidas}
+               acertos={acertos} rodadas={rodadas} completa={rodadaCompleta} onNovaRodada={novaRodada} />
+    )}
     </>
   )
 }
@@ -342,6 +450,19 @@ function Desafio({ rodada, respostas, setRespostas, conferidas, setConferidas, a
       </ul>
       {completa && (
         <p className="metas-fim">✦ Rodada fechada. Sorteie outra para treinar com cenários novos.</p>
+      )}
+      {(completa || rodadas > 0) && (
+        <aside className="fechamento" aria-label="Fechamento do tema">
+          <p className="eyebrow">O QUE VOCÊ LEVA DESTE TEMA</p>
+          <p>
+            Toda escolha tem um custo: o valor da melhor alternativa deixada de lado, mesmo quando
+            nenhum dinheiro sai do bolso. Uma escolha só vale a pena se render mais que esse custo.
+          </p>
+          <p>
+            No tema 2 o raciocínio volta: cada real gasto com café é um real a menos para outra
+            coisa. <a href="#consumidor">Ir para Teoria do consumidor →</a>
+          </p>
+        </aside>
       )}
       <div className="jornada-acoes">
         <button className="button primary" onClick={() => setConferidas({ ...respostas })}>Conferir respostas →</button>
